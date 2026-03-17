@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-slate-950 text-white antialiased;
+  background-image: radial-gradient(circle at top, rgba(34, 211, 238, 0.12), transparent 32%), linear-gradient(180deg, #020617 0%, #0f172a 65%, #111827 100%);
+}
+
+.transit-grid {
+  background-image: radial-gradient(circle at center, rgba(34,211,238,0.12) 0, rgba(15,23,42,0) 45%), linear-gradient(rgba(148,163,184,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.08) 1px, transparent 1px);
+  background-size: auto, 56px 56px, 56px 56px;
+}

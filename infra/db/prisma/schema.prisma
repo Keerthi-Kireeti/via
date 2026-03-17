@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  passenger
+  conductor
+  admin
+  logistics_user
+}
+
+enum TicketStatus {
+  active
+  completed
+  expired
+}
+
+enum ParcelStatus {
+  booked
+  loaded
+  in_transit
+  arrived
+  delivered
+}
+
+enum ParcelHealthStatus {
+  stable
+  temperature_warning
+  shock_warning
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  role      UserRole
+  city      String
+  tickets   Ticket[]
+  parcels   Parcel[] @relation("ParcelSender")
+}
+
+model Depot {
+  id    String @id @default(cuid())
+  name  String
+  city  String
+  buses Bus[]
+}
+
+model RouteLineage {
+  id        String  @id @default(cuid())
+  name      String
+  cityChain String[]
+  routes    Route[]
+}
+
+model Route {
+  id                    String   @id @default(cuid())
+  code                  String   @unique
+  name                  String
+  origin                String
+  destination           String
+  distanceKm            Int
+  averageSegmentMinutes Int
+  lineageId             String
+  lineage               RouteLineage @relation(fields: [lineageId], references: [id])
+  stops                 RouteStop[]
+  buses                 Bus[]
+}
+
+model RouteStop {
+  id        String  @id @default(cuid())
+  routeId    String
+  route      Route   @relation(fields: [routeId], references: [id])
+  name      String
+  city      String
+  order     Int
+  latitude  Float
+  longitude Float
+}
+
+model Bus {
+  id            String  @id @default(cuid())
+  code          String  @unique
+  routeId       String
+  route         Route   @relation(fields: [routeId], references: [id])
+  depotId       String
+  depot         Depot   @relation(fields: [depotId], references: [id])
+  conductorId   String
+  occupancy     Int
+  seatCapacity  Int
+  luggageVolume Int
+  luggageUsed   Int
+  telemetry     BusTelemetry[]
+  parcels       Parcel[]
+}
+
+model BusTelemetry {
+  id           String   @id @default(cuid())
+  busId         String
+  bus           Bus      @relation(fields: [busId], references: [id])
+  latitude     Float
+  longitude    Float
+  speedKmph    Int
+  heading      Int
+  currentStopId String
+  nextStopId    String
+  capturedAt   DateTime @default(now())
+}
+
+model Ticket {
+  id               String   @id @default(cuid())
+  passengerId      String
+  passenger        User     @relation(fields: [passengerId], references: [id])
+  lineageId        String
+  originStopId     String
+  destinationStopId String
+  allowedSegments  Int[]
+  fare             Int
+  status           TicketStatus
+  qrToken          String   @unique
+  issuedAt         DateTime @default(now())
+  validUntil       DateTime
+}
+
+model Parcel {
+  id              String   @id @default(cuid())
+  senderId        String
+  sender          User     @relation("ParcelSender", fields: [senderId], references: [id])
+  fromCity        String
+  destinationCity String
+  length          Int
+  width           Int
+  height          Int
+  weightKg        Float
+  assignedBusId   String?
+  bus             Bus?     @relation(fields: [assignedBusId], references: [id])
+  status          ParcelStatus
+  qrToken         String   @unique
+  eta             DateTime
+  healthStatus    ParcelHealthStatus
+}

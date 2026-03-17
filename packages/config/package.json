@@ -1,0 +1,7 @@
+{
+  "name": "@transitlink/config",
+  "version": "0.1.0",
+  "private": true,
+  "main": "env.ts",
+  "types": "env.ts"
+}
