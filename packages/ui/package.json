@@ -8,4 +8,8 @@
     "react": "^18.3.1 || ^19.0.0",
     "react-dom": "^18.3.1 || ^19.0.0"
   }
+  ,
+  "scripts": {
+    "typecheck": "echo 'no typecheck for package ui'"
+  }
 }

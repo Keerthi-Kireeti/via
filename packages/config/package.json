@@ -3,5 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "main": "env.ts",
-  "types": "env.ts"
+  "types": "env.ts",
+  "scripts": {
+    "typecheck": "echo 'no typecheck for package config'"
+  }
 }
