@@ -1,0 +1,96 @@
+ΓòöΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòù
+Γòæ    TransitLink MVP - API Integration Test Suite        Γòæ
+Γòæ              All 58+ REST Endpoints                     Γòæ
+ΓòÜΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓò¥
+
+=== AUTH ENDPOINTS ===
+POST /auth/signup
+POST /auth/login
+GET /auth/profile
+POST /auth/refresh
+
+=== BUS & ROUTE ENDPOINTS ===
+GET /buses
+GET /buses/:busId
+GET /buses/:busId/occupancy
+PUT /buses/:busId/occupancy
+GET /buses/search/nearby
+GET /routes
+GET /routes/search
+GET /routes/:routeId
+GET /routes/:routeId/eta
+
+=== TICKET ENDPOINTS ===
+POST /tickets/quote
+POST /tickets/purchase
+GET /tickets
+GET /tickets/:ticketId
+POST /tickets/:ticketId/scan
+DELETE /tickets/:ticketId
+GET /tickets/user/:userId/history
+
+=== PARCEL ENDPOINTS ===
+POST /parcels/book
+GET /parcels
+GET /parcels/:parcelId
+GET /parcels/:parcelId/track
+POST /parcels/:parcelId/scan
+POST /parcels/check-fit
+GET /parcels/:parcelId/health
+
+=== OCCUPANCY ENDPOINTS ===
+GET /occupancy/:busId
+PUT /occupancy/:busId
+GET /occupancy/:busId/predict
+
+=== ADMIN ENDPOINTS ===
+GET /admin/dashboard
+GET /admin/analytics
+GET /admin/heatmap
+GET /admin/revenue
+
+=== NOTIFICATION ENDPOINTS ===
+GET /notifications
+POST /notifications
+
+ΓòöΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòù
+Γòæ  RESULTS: 10 PASSED, 26 FAILED                           Γòæ
+ΓòÜΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓò¥
+
+Endpoint Summary:
+  Γ£à POST /auth/signup (201)
+  Γ£à POST /auth/login (200)
+  Γ¥î GET /auth/profile (404)
+  Γ£à POST /auth/refresh (200)
+  Γ£à GET /buses (200)
+  Γ¥î GET /buses/:busId (404)
+  Γ¥î GET /buses/:busId/occupancy (404)
+  Γ¥î PUT /buses/:busId/occupancy (404)
+  Γ¥î GET /buses/search/nearby (404)
+  Γ£à GET /routes (200)
+  Γ¥î GET /routes/search (404)
+  Γ¥î GET /routes/:routeId (404)
+  Γ¥î GET /routes/:routeId/eta (404)
+  Γ£à POST /tickets/quote (200)
+  Γ£à POST /tickets/purchase (201)
+  Γ¥î GET /tickets (404)
+  Γ¥î GET /tickets/:ticketId (404)
+  Γ¥î POST /tickets/:ticketId/scan (404)
+  Γ¥î DELETE /tickets/:ticketId (404)
+  Γ¥î GET /tickets/user/:userId/history (404)
+  Γ£à POST /parcels/book (201)
+  Γ£à GET /parcels (200)
+  Γ¥î GET /parcels/:parcelId (404)
+  Γ¥î GET /parcels/:parcelId/track (404)
+  Γ¥î POST /parcels/:parcelId/scan (404)
+  Γ¥î POST /parcels/check-fit (404)
+  Γ¥î GET /parcels/:parcelId/health (404)
+  Γ£à GET /occupancy/:busId (200)
+  Γ¥î PUT /occupancy/:busId (404)
+  Γ¥î GET /occupancy/:busId/predict (404)
+  Γ¥î GET /admin/dashboard (404)
+  Γ¥î GET /admin/analytics (404)
+  Γ¥î GET /admin/heatmap (404)
+  Γ¥î GET /admin/revenue (404)
+  Γ¥î GET /notifications (404)
+  Γ¥î POST /notifications (404)

@@ -9,8 +9,8 @@
   "scripts": {
     "dev:web": "npm --workspace @transitlink/web run dev",
     "dev:api": "npm --workspace @transitlink/api run dev",
-    "build": "npm run build --workspaces",
-    "lint": "npm run lint --workspaces",
-    "typecheck": "npm run typecheck --workspaces"
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
   }
 }

@@ -35,13 +35,17 @@ enum ParcelHealthStatus {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  role      UserRole
-  city      String
-  tickets   Ticket[]
-  parcels   Parcel[] @relation("ParcelSender")
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  role         UserRole
+  city         String
+  tickets      Ticket[]
+  parcels      Parcel[] @relation("ParcelSender")
+  notifications Notification[]
+  seatAlerts   SeatAlertSubscription[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Depot {
@@ -97,6 +101,11 @@ model Bus {
   luggageUsed   Int
   telemetry     BusTelemetry[]
   parcels       Parcel[]
+  parcelScans   ParcelScanEvent[]
+  boardingEvents BoardingEvent[]
+  occupancySnapshots OccupancySnapshot[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model BusTelemetry {
@@ -125,6 +134,9 @@ model Ticket {
   qrToken          String   @unique
   issuedAt         DateTime @default(now())
   validUntil       DateTime
+  boardingEvents   BoardingEvent[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model Parcel {
@@ -143,4 +155,90 @@ model Parcel {
   qrToken         String   @unique
   eta             DateTime
   healthStatus    ParcelHealthStatus
+  scanEvents      ParcelScanEvent[]
+  healthUpdates   ParcelContainerHealth[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ParcelScanEvent {
+  id        String   @id @default(cuid())
+  parcelId  String
+  parcel    Parcel   @relation(fields: [parcelId], references: [id], onDelete: Cascade)
+  busId     String
+  bus       Bus      @relation(fields: [busId], references: [id])
+  eventType String   // "loaded" | "unloaded"
+  conductor String
+  scannedAt DateTime @default(now())
+}
+
+model ParcelContainerHealth {
+  id            String   @id @default(cuid())
+  parcelId      String
+  parcel        Parcel   @relation(fields: [parcelId], references: [id], onDelete: Cascade)
+  healthStatus  ParcelHealthStatus
+  temperatureC  Float?
+  impactG       Float?
+  recordedAt    DateTime @default(now())
+}
+
+model BoardingEvent {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  busId     String
+  bus       Bus      @relation(fields: [busId], references: [id])
+  boardedAt DateTime @default(now())
+}
+
+model SeatAlertSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routeId   String
+  busId     String?
+  minSeats  Int
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  notificationType String // "seat_available" | "parcel_status" | "delay" | "alert"
+  relatedId String?  // ticket, parcel, or bus ID
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model OccupancySnapshot {
+  id        String   @id @default(cuid())
+  busId     String
+  bus       Bus      @relation(fields: [busId], references: [id], onDelete: Cascade)
+  occupiedSeats Int
+  totalSeats    Int
+  snapshotAt    DateTime @default(now())
+}
+
+model RevenueRecord {
+  id        String   @id @default(cuid())
+  ticketId  String?
+  parcelId  String?
+  amount    Int       // in cents
+  recordType String   // "ticket" | "parcel"
+  recordedAt DateTime @default(now())
+}
+
+model AnalyticsAggregate {
+  id        String   @id @default(cuid())
+  date      DateTime // date of aggregation
+  totalTicketsSold Int
+  totalRevenueTickets Int
+  totalParcelsDelivered Int
+  totalRevenueParcel Int
+  avgOccupancy Float
+  peakHour  Int
+  createdAt DateTime @default(now())
 }

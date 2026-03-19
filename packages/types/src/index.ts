@@ -214,3 +214,61 @@ export interface LiveBusCardData {
   occupancy: BusOccupancyStatus;
   etaMinutes: number;
 }
+
+export interface ParcelContainerHealth {
+  id: string;
+  parcelId: string;
+  healthStatus: ParcelHealthStatus;
+  temperatureC?: number;
+  impactG?: number;
+  recordedAt: string;
+}
+
+export interface Notification {
+  id: string;
+  userId: string;
+  title: string;
+  message: string;
+  notificationType: "seat_available" | "parcel_status" | "delay" | "alert";
+  relatedId?: string;
+  read: boolean;
+  createdAt: string;
+}
+
+export interface OccupancySnapshot {
+  id: string;
+  busId: string;
+  occupiedSeats: number;
+  totalSeats: number;
+  snapshotAt: string;
+}
+
+export interface AnalyticsDashboard {
+  totalTicketsSold: number;
+  totalRevenueTickets: number;
+  totalParcelsDelivered: number;
+  totalRevenueParcel: number;
+  avgOccupancy: number;
+  peakHour: number;
+  busCount: number;
+  activeTrips: number;
+}
+
+export interface LineageTransferInfo {
+  lineageId: string;
+  sourceTicketId: string;
+  sourceRouteId: string;
+  destinationRouteId: string;
+  transferStopId: string;
+  transferTime: string;
+  newTicketId?: string;
+}
+
+export interface JwtPayload {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  iat: number;
+  exp: number;
+}

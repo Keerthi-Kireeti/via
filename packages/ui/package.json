@@ -10,6 +10,8 @@
   }
   ,
   "scripts": {
+    "build": "echo 'no build required for package ui'",
+    "lint": "echo 'lint not configured for package ui'",
     "typecheck": "echo 'no typecheck for package ui'"
   }
 }

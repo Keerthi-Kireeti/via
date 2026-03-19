@@ -5,6 +5,8 @@
   "main": "env.ts",
   "types": "env.ts",
   "scripts": {
+    "build": "echo 'no build required for package config'",
+    "lint": "echo 'lint not configured for package config'",
     "typecheck": "echo 'no typecheck for package config'"
   }
 }
