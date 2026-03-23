@@ -1,5 +1,6 @@
 import { Panel, StatusPill } from "@transitlink/ui";
 import { Hero, ParcelTimeline } from "../../components/cards";
+import { CargoOptimizer } from "../../components/CargoOptimizer";
 import { parcelTracking, parcels } from "../../lib/demo-data";
 
 export default function LogisticsPage() {
@@ -17,6 +18,17 @@ export default function LogisticsPage() {
         </Panel>
         <ParcelTimeline tracking={parcelTracking} />
       </div>
+
+      <Panel title="3D Cargo Optimizer" eyebrow="Intelligent arrangement system">
+        <CargoOptimizer initialCargo={parcels.map((p) => ({
+          id: p.id,
+          length: p.dimensions.length,
+          width: p.dimensions.width,
+          height: p.dimensions.height,
+          weightKg: p.weightKg
+        }))} />
+      </Panel>
+
       <Panel title="Shipment queue" eyebrow="Current bookings">
         <div className="grid gap-3 md:grid-cols-2">
           {parcels.map((parcel) => (

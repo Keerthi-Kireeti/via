@@ -341,3 +341,206 @@ export function resolveRoleRedirect(role: UserRole) {
       return "/passenger";
   }
 }
+
+// 3D Cargo Optimization
+export interface CargoForOptimization {
+  id: string;
+  length: number;
+  width: number;
+  height: number;
+  weightKg: number;
+}
+
+export interface BusCapacity {
+  length: number; // cm
+  width: number;
+  height: number;
+  maxWeightKg: number;
+}
+
+export interface PlacedCargo extends CargoForOptimization {
+  position: { x: number; y: number; z: number };
+}
+
+export interface OptimizationResult {
+  placed: PlacedCargo[];
+  unplaced: CargoForOptimization[];
+  volumeUtilization: number;
+  weightUtilization: number;
+  totalWeight: number;
+}
+
+function generateRotations(cargo: CargoForOptimization): CargoForOptimization[] {
+  const rotations: CargoForOptimization[] = [];
+  const dimensions = [cargo.length, cargo.width, cargo.height];
+  const permutations = [
+    [dimensions[0], dimensions[1], dimensions[2]],
+    [dimensions[0], dimensions[2], dimensions[1]],
+    [dimensions[1], dimensions[0], dimensions[2]],
+    [dimensions[1], dimensions[2], dimensions[0]],
+    [dimensions[2], dimensions[0], dimensions[1]],
+    [dimensions[2], dimensions[1], dimensions[0]]
+  ];
+
+  const seen = new Set<string>();
+  for (const [length, width, height] of permutations) {
+    const key = `${length},${width},${height}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      rotations.push({ ...cargo, length, width, height });
+    }
+  }
+
+  return rotations;
+}
+
+interface Rectangle {
+  x: number;
+  y: number;
+  z: number;
+  width: number;
+  height: number;
+  depth: number;
+}
+
+function splitRectangle(
+  rect: Rectangle,
+  itemPos: { x: number; y: number; z: number },
+  item: PlacedCargo
+): Rectangle[] {
+  const newRects: Rectangle[] = [];
+
+  if (itemPos.x + item.width < rect.x + rect.width) {
+    newRects.push({
+      x: itemPos.x + item.width,
+      y: rect.y,
+      z: rect.z,
+      width: rect.x + rect.width - (itemPos.x + item.width),
+      height: rect.height,
+      depth: rect.depth
+    });
+  }
+
+  if (itemPos.y + item.height < rect.y + rect.height) {
+    newRects.push({
+      x: rect.x,
+      y: itemPos.y + item.height,
+      z: rect.z,
+      width: rect.width,
+      height: rect.y + rect.height - (itemPos.y + item.height),
+      depth: rect.depth
+    });
+  }
+
+  if (itemPos.z + item.length < rect.z + rect.depth) {
+    newRects.push({
+      x: rect.x,
+      y: rect.y,
+      z: itemPos.z + item.length,
+      width: rect.width,
+      height: rect.height,
+      depth: rect.z + rect.depth - (itemPos.z + item.length)
+    });
+  }
+
+  return newRects;
+}
+
+export function optimizeCargoPlacement(
+  cargo: CargoForOptimization[],
+  bay: BusCapacity
+): OptimizationResult {
+  const sortedCargo = [...cargo].sort(
+    (a, b) =>
+      b.length * b.width * b.height - (a.length * a.width * a.height)
+  );
+
+  const placed: PlacedCargo[] = [];
+  const unplaced: CargoForOptimization[] = [];
+  let totalWeight = 0;
+
+  const freeRectangles: Rectangle[] = [
+    {
+      x: 0,
+      y: 0,
+      z: 0,
+      width: bay.width,
+      height: bay.height,
+      depth: bay.length
+    }
+  ];
+
+  for (const item of sortedCargo) {
+    if (totalWeight + item.weightKg > bay.maxWeightKg) {
+      unplaced.push(item);
+      continue;
+    }
+
+    const rotations = generateRotations(item);
+    let bestFit: {
+      position: { x: number; y: number; z: number };
+      rotation: CargoForOptimization;
+      rectangleIndex: number;
+      wastedSpace: number;
+    } | null = null;
+
+    for (let rectIdx = 0; rectIdx < freeRectangles.length; rectIdx++) {
+      const rect = freeRectangles[rectIdx];
+
+      for (const rotatedItem of rotations) {
+        if (
+          rotatedItem.width <= rect.width &&
+          rotatedItem.height <= rect.height &&
+          rotatedItem.length <= rect.depth
+        ) {
+          const wastedSpace =
+            rect.width * rect.height * rect.depth -
+            (rotatedItem.width * rotatedItem.height * rotatedItem.length);
+
+          if (!bestFit || wastedSpace < bestFit.wastedSpace) {
+            bestFit = {
+              position: { x: rect.x, y: rect.y, z: rect.z },
+              rotation: rotatedItem,
+              rectangleIndex: rectIdx,
+              wastedSpace
+            };
+          }
+        }
+      }
+    }
+
+    if (bestFit) {
+      const placedItem: PlacedCargo = {
+        ...bestFit.rotation,
+        id: item.id,
+        weightKg: item.weightKg,
+        position: bestFit.position
+      };
+
+      placed.push(placedItem);
+      totalWeight += item.weightKg;
+
+      const rect = freeRectangles[bestFit.rectangleIndex];
+      freeRectangles.splice(bestFit.rectangleIndex, 1);
+
+      const newRectangles = splitRectangle(rect, placedItem.position, placedItem);
+      freeRectangles.push(...newRectangles);
+    } else {
+      unplaced.push(item);
+    }
+  }
+
+  const totalVolume = bay.length * bay.width * bay.height;
+  const usedVolume = placed.reduce(
+    (sum, p) => sum + p.length * p.width * p.height,
+    0
+  );
+
+  return {
+    placed,
+    unplaced,
+    volumeUtilization: usedVolume / totalVolume,
+    weightUtilization: totalWeight / bay.maxWeightKg,
+    totalWeight
+  };
+}

@@ -16,6 +16,7 @@ import {
   listParcels,
   listRoutes,
   listSchedules,
+  optimizeCargoPlacement,
   predictCargoFit,
   purchaseTicket,
   quoteFare,
@@ -175,6 +176,48 @@ export function createApp(io?: { emit: (event: string, payload: unknown) => void
       return res.json(tracking);
     } catch (error) {
       return res.status(400).json({ message: error instanceof Error ? error.message : "Unable to update parcel health." });
+    }
+  });
+
+  app.post("/parcels/optimize", (req, res) => {
+    try {
+      const { cargo, bay } = req.body as { cargo: any[]; bay: any };
+      
+      // Convert parcel format to cargo format for optimization
+      const cargoItems = cargo.map((item: any) => ({
+        id: item.id,
+        length: item.dimensions?.length || item.length || 20,
+        width: item.dimensions?.width || item.width || 20,
+        height: item.dimensions?.height || item.height || 20,
+        weightKg: item.weightKg || 5
+      }));
+
+      // Default bus luggage bay dimensions if not provided
+      const busCapacity = bay || {
+        length: 200,
+        width: 150,
+        height: 100,
+        maxWeightKg: 500
+      };
+
+      const result = optimizeCargoPlacement(cargoItems, busCapacity);
+      
+      return res.json({
+        placed: result.placed,
+        unplaced: result.unplaced,
+        statistics: {
+          totalCargo: result.placed.length + result.unplaced.length,
+          packedCargo: result.placed.length,
+          unpackedCargo: result.unplaced.length,
+          packingRate: ((result.placed.length / (result.placed.length + result.unplaced.length)) * 100).toFixed(1),
+          volumeUtilization: (result.volumeUtilization * 100).toFixed(1),
+          weightUtilization: (result.weightUtilization * 100).toFixed(1),
+          totalWeight: result.totalWeight.toFixed(1),
+          efficiency: ((result.volumeUtilization * 0.7 + result.weightUtilization * 0.3) * 100).toFixed(1)
+        }
+      });
+    } catch (error) {
+      return res.status(400).json({ message: error instanceof Error ? error.message : "Unable to optimize cargo placement." });
     }
   });
 
