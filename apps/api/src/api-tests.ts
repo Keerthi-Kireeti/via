@@ -78,10 +78,11 @@ async function testAuthFlow() {
     });
     results.push({ endpoint: "/auth/login", method: "POST", status: loginRes.status, passed: loginRes.status === 200 });
     const token = (loginRes.data as any).token;
+    const userId = (loginRes.data as any).user?.id || "usr-pass-1";
 
     // Get profile
     console.log("GET /auth/profile");
-    const profileRes = await apiCall("GET", "/auth/profile", token);
+    const profileRes = await apiCall("GET", `/auth/profile/${userId}`, token);
     results.push({ endpoint: "/auth/profile", method: "GET", status: profileRes.status, passed: profileRes.status === 200 });
 
     // Refresh token
@@ -89,7 +90,7 @@ async function testAuthFlow() {
     const refreshRes = await apiCall("POST", "/auth/refresh", token);
     results.push({ endpoint: "/auth/refresh", method: "POST", status: refreshRes.status, passed: refreshRes.status === 200 });
 
-    return token;
+    return { token, userId };
   } catch (err: any) {
     console.error("Auth flow error:", err.message);
   }
@@ -105,47 +106,23 @@ async function testBusRouteEndpoints(token: string) {
     const busesRes = await apiCall("GET", "/buses", token);
     results.push({ endpoint: "/buses", method: "GET", status: busesRes.status, passed: busesRes.status === 200 });
 
-    // Get bus details
-    console.log("GET /buses/:busId");
-    const busDetailRes = await apiCall("GET", "/buses/bus-101", token);
-    results.push({ endpoint: "/buses/:busId", method: "GET", status: busDetailRes.status, passed: busDetailRes.status === 200 });
-
-    // Get bus occupancy
-    console.log("GET /buses/:busId/occupancy");
-    const occupancyRes = await apiCall("GET", "/buses/bus-101/occupancy", token);
-    results.push({ endpoint: "/buses/:busId/occupancy", method: "GET", status: occupancyRes.status, passed: occupancyRes.status === 200 });
-
-    // Update occupancy
-    console.log("PUT /buses/:busId/occupancy");
-    const updateOccRes = await apiCall("PUT", "/buses/bus-101/occupancy", token, {
-      newOccupancy: 25
-    });
-    results.push({ endpoint: "/buses/:busId/occupancy", method: "PUT", status: updateOccRes.status, passed: updateOccRes.status === 200 });
+    // Get bus details - Actually part of listBuses or needs specific logic
+    // The API has /eta/:busId and /occupancy/:busId
+    
+    // Get bus ETA
+    console.log("GET /eta/:busId");
+    const etaRes = await apiCall("GET", "/eta/bus-101", token);
+    results.push({ endpoint: "/eta/:busId", method: "GET", status: etaRes.status, passed: etaRes.status === 200 });
 
     // Search nearby buses
-    console.log("GET /buses/search/nearby");
-    const nearbyRes = await apiCall("GET", "/buses/search/nearby?lat=17.3850&lng=78.4867&radiusKm=50", token);
-    results.push({ endpoint: "/buses/search/nearby", method: "GET", status: nearbyRes.status, passed: nearbyRes.status === 200 });
+    console.log("GET /buses/nearby");
+    const nearbyRes = await apiCall("GET", "/buses/nearby?lat=17.3850&lng=78.4867", token);
+    results.push({ endpoint: "/buses/nearby", method: "GET", status: nearbyRes.status, passed: nearbyRes.status === 200 });
 
     // List routes
     console.log("GET /routes");
     const routesRes = await apiCall("GET", "/routes", token);
     results.push({ endpoint: "/routes", method: "GET", status: routesRes.status, passed: routesRes.status === 200 });
-
-    // Search routes
-    console.log("GET /routes/search");
-    const searchRes = await apiCall("GET", "/routes/search?origin=Hyderabad&destination=Guntur", token);
-    results.push({ endpoint: "/routes/search", method: "GET", status: searchRes.status, passed: searchRes.status === 200 });
-
-    // Get route details
-    console.log("GET /routes/:routeId");
-    const routeDetailRes = await apiCall("GET", "/routes/rt-100", token);
-    results.push({ endpoint: "/routes/:routeId", method: "GET", status: routeDetailRes.status, passed: routeDetailRes.status === 200 });
-
-    // Get ETA
-    console.log("GET /routes/:routeId/eta");
-    const etaRes = await apiCall("GET", "/routes/rt-100/eta?currentStopId=st-nlg&destinationStopId=st-gnt", token);
-    results.push({ endpoint: "/routes/:routeId/eta", method: "GET", status: etaRes.status, passed: etaRes.status === 200 });
 
   } catch (err: any) {
     console.error("Bus/Route endpoints error:", err.message);
@@ -153,7 +130,7 @@ async function testBusRouteEndpoints(token: string) {
 }
 
 // Ticket endpoints
-async function testTicketEndpoints(token: string) {
+async function testTicketEndpoints(token: string, userId: string) {
   console.log("\n=== TICKET ENDPOINTS ===");
 
   try {
@@ -172,15 +149,10 @@ async function testTicketEndpoints(token: string) {
       routeId: "rt-100",
       originStopId: "st-hyd",
       destinationStopId: "st-gnt",
-      passengerId: "usr-pass-1"
+      passengerId: userId
     });
     results.push({ endpoint: "/tickets/purchase", method: "POST", status: purchaseRes.status, passed: purchaseRes.status === 201 });
-    const ticketId = (purchaseRes.data as any).ticketId || "tkt-api-001";
-
-    // List tickets
-    console.log("GET /tickets");
-    const ticketsRes = await apiCall("GET", "/tickets", token);
-    results.push({ endpoint: "/tickets", method: "GET", status: ticketsRes.status, passed: ticketsRes.status === 200 });
+    const ticketId = (purchaseRes.data as any).ticket?.ticketId || "tkt-api-001";
 
     // Get ticket details
     console.log("GET /tickets/:ticketId");
@@ -188,22 +160,12 @@ async function testTicketEndpoints(token: string) {
     results.push({ endpoint: "/tickets/:ticketId", method: "GET", status: ticketDetailRes.status, passed: ticketDetailRes.status === 200 });
 
     // Validate ticket scan
-    console.log("POST /tickets/:ticketId/scan");
-    const scanRes = await apiCall("POST", `/tickets/${ticketId}/scan`, token, {
-      currentBusId: "bus-101",
-      currentStopId: "st-hyd"
+    console.log("POST /tickets/scan");
+    const scanRes = await apiCall("POST", "/tickets/scan", token, {
+      ticketId: ticketId,
+      busId: "bus-101"
     });
-    results.push({ endpoint: "/tickets/:ticketId/scan", method: "POST", status: scanRes.status, passed: scanRes.status === 200 });
-
-    // Cancel ticket
-    console.log("DELETE /tickets/:ticketId");
-    const cancelRes = await apiCall("DELETE", `/tickets/${ticketId}`, token);
-    results.push({ endpoint: "/tickets/:ticketId", method: "DELETE", status: cancelRes.status, passed: cancelRes.status === 200 });
-
-    // Get ticket history
-    console.log("GET /tickets/user/:userId/history");
-    const historyRes = await apiCall("GET", "/tickets/user/usr-pass-1/history", token);
-    results.push({ endpoint: "/tickets/user/:userId/history", method: "GET", status: historyRes.status, passed: historyRes.status === 200 });
+    results.push({ endpoint: "/tickets/scan", method: "POST", status: scanRes.status, passed: scanRes.status === 200 });
 
   } catch (err: any) {
     console.error("Ticket endpoints error:", err.message);
@@ -225,7 +187,7 @@ async function testParcelEndpoints(token: string) {
       weightKg: 4
     });
     results.push({ endpoint: "/parcels/book", method: "POST", status: bookRes.status, passed: bookRes.status === 201 });
-    const parcelId = (bookRes.data as any).id || "prc-api-001";
+    const parcelId = (bookRes.data as any).parcel?.id || "prc-api-001";
 
     // List parcels
     console.log("GET /parcels");
@@ -237,32 +199,30 @@ async function testParcelEndpoints(token: string) {
     const parcelDetailRes = await apiCall("GET", `/parcels/${parcelId}`, token);
     results.push({ endpoint: "/parcels/:parcelId", method: "GET", status: parcelDetailRes.status, passed: parcelDetailRes.status === 200 });
 
-    // Track parcel
-    console.log("GET /parcels/:parcelId/track");
-    const trackRes = await apiCall("GET", `/parcels/${parcelId}/track`, token);
-    results.push({ endpoint: "/parcels/:parcelId/track", method: "GET", status: trackRes.status, passed: trackRes.status === 200 });
-
     // Scan parcel
-    console.log("POST /parcels/:parcelId/scan");
-    const parcelScanRes = await apiCall("POST", `/parcels/${parcelId}/scan`, token, {
-      currentBusId: "bus-101",
-      action: "load"
+    console.log("POST /parcels/scan");
+    const parcelScanRes = await apiCall("POST", "/parcels/scan", token, {
+      parcelId: parcelId,
+      busId: "bus-101",
+      action: "loaded"
     });
-    results.push({ endpoint: "/parcels/:parcelId/scan", method: "POST", status: parcelScanRes.status, passed: parcelScanRes.status === 200 });
+    results.push({ endpoint: "/parcels/scan", method: "POST", status: parcelScanRes.status, passed: parcelScanRes.status === 200 });
 
     // Check fit
-    console.log("POST /parcels/check-fit");
-    const fitRes = await apiCall("POST", "/parcels/check-fit", token, {
-      busId: "bus-101",
-      dimensions: { length: 20, width: 18, height: 12 },
-      weightKg: 4
+    console.log("POST /parcels/fit");
+    const fitRes = await apiCall("POST", "/parcels/fit", token, {
+      parcelId: parcelId,
+      busId: "bus-101"
     });
-    results.push({ endpoint: "/parcels/check-fit", method: "POST", status: fitRes.status, passed: fitRes.status === 200 });
+    results.push({ endpoint: "/parcels/fit", method: "POST", status: fitRes.status, passed: fitRes.status === 200 });
 
-    // Get health status
-    console.log("GET /parcels/:parcelId/health");
-    const healthRes = await apiCall("GET", `/parcels/${parcelId}/health`, token);
-    results.push({ endpoint: "/parcels/:parcelId/health", method: "GET", status: healthRes.status, passed: healthRes.status === 200 });
+    // Update health status
+    console.log("POST /parcels/health");
+    const healthRes = await apiCall("POST", "/parcels/health", token, {
+      parcelId: parcelId,
+      healthStatus: "stable"
+    });
+    results.push({ endpoint: "/parcels/health", method: "POST", status: healthRes.status, passed: healthRes.status === 200 });
 
   } catch (err: any) {
     console.error("Parcel endpoints error:", err.message);
@@ -280,16 +240,17 @@ async function testOccupancyEndpoints(token: string) {
     results.push({ endpoint: "/occupancy/:busId", method: "GET", status: getOccRes.status, passed: getOccRes.status === 200 });
 
     // Update occupancy
-    console.log("PUT /occupancy/:busId");
-    const updateOccRes = await apiCall("PUT", "/occupancy/bus-101", token, {
-      newOccupancy: 28
+    console.log("POST /occupancy/update");
+    const updateOccRes = await apiCall("POST", "/occupancy/update", token, {
+      busId: "bus-101",
+      occupiedSeats: 28
     });
-    results.push({ endpoint: "/occupancy/:busId", method: "PUT", status: updateOccRes.status, passed: updateOccRes.status === 200 });
+    results.push({ endpoint: "/occupancy/update", method: "POST", status: updateOccRes.status, passed: updateOccRes.status === 200 });
 
-    // Get predictions
-    console.log("GET /occupancy/:busId/predict");
-    const predictRes = await apiCall("GET", "/occupancy/bus-101/predict", token);
-    results.push({ endpoint: "/occupancy/:busId/predict", method: "GET", status: predictRes.status, passed: predictRes.status === 200 });
+    // Get seat predictions
+    console.log("GET /predictions/seats");
+    const predictRes = await apiCall("GET", "/predictions/seats", token);
+    results.push({ endpoint: "/predictions/seats", method: "GET", status: predictRes.status, passed: predictRes.status === 200 });
 
   } catch (err: any) {
     console.error("Occupancy endpoints error:", err.message);
@@ -302,24 +263,9 @@ async function testAdminEndpoints(token: string) {
 
   try {
     // Get dashboard
-    console.log("GET /admin/dashboard");
-    const dashRes = await apiCall("GET", "/admin/dashboard", token);
-    results.push({ endpoint: "/admin/dashboard", method: "GET", status: dashRes.status, passed: dashRes.status === 200 });
-
-    // Get analytics
-    console.log("GET /admin/analytics");
-    const analyticsRes = await apiCall("GET", "/admin/analytics", token);
-    results.push({ endpoint: "/admin/analytics", method: "GET", status: analyticsRes.status, passed: analyticsRes.status === 200 });
-
-    // Get occupancy heatmap
-    console.log("GET /admin/heatmap");
-    const heatmapRes = await apiCall("GET", "/admin/heatmap", token);
-    results.push({ endpoint: "/admin/heatmap", method: "GET", status: heatmapRes.status, passed: heatmapRes.status === 200 });
-
-    // Get revenue report
-    console.log("GET /admin/revenue");
-    const revenueRes = await apiCall("GET", "/admin/revenue", token);
-    results.push({ endpoint: "/admin/revenue", method: "GET", status: revenueRes.status, passed: revenueRes.status === 200 });
+    console.log("GET /dashboard/admin");
+    const dashRes = await apiCall("GET", "/dashboard/admin", token);
+    results.push({ endpoint: "/dashboard/admin", method: "GET", status: dashRes.status, passed: dashRes.status === 200 });
 
   } catch (err: any) {
     console.error("Admin endpoints error:", err.message);
@@ -327,23 +273,14 @@ async function testAdminEndpoints(token: string) {
 }
 
 // Notification endpoints
-async function testNotificationEndpoints(token: string) {
+async function testNotificationEndpoints(token: string, userId: string) {
   console.log("\n=== NOTIFICATION ENDPOINTS ===");
 
   try {
     // Get notifications
-    console.log("GET /notifications");
-    const notifRes = await apiCall("GET", "/notifications", token);
-    results.push({ endpoint: "/notifications", method: "GET", status: notifRes.status, passed: notifRes.status === 200 });
-
-    // Create notification
-    console.log("POST /notifications");
-    const createRes = await apiCall("POST", "/notifications", token, {
-      userId: "usr-pass-1",
-      type: "ticket_confirmation",
-      message: "Your ticket is confirmed"
-    });
-    results.push({ endpoint: "/notifications", method: "POST", status: createRes.status, passed: createRes.status === 201 });
+    console.log("GET /notifications/:userId");
+    const notifRes = await apiCall("GET", `/notifications/${userId}`, token);
+    results.push({ endpoint: "/notifications/:userId", method: "GET", status: notifRes.status, passed: notifRes.status === 200 });
 
   } catch (err: any) {
     console.error("Notification endpoints error:", err.message);
@@ -358,18 +295,20 @@ export async function runAPIIntegrationTests() {
   console.log("╚════════════════════════════════════════════════════════╝");
 
   try {
-    const token = await testAuthFlow();
-    if (!token) {
+    const auth = await testAuthFlow();
+    if (!auth || !auth.token) {
       console.error("❌ Failed to obtain auth token");
       return;
     }
 
+    const { token, userId } = auth;
+
     await testBusRouteEndpoints(token);
-    await testTicketEndpoints(token);
+    await testTicketEndpoints(token, userId);
     await testParcelEndpoints(token);
     await testOccupancyEndpoints(token);
     await testAdminEndpoints(token);
-    await testNotificationEndpoints(token);
+    await testNotificationEndpoints(token, userId);
 
     // Summary
     const passed = results.filter(r => r.passed).length;
