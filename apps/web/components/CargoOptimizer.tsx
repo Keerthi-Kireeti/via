@@ -24,7 +24,7 @@ const DEFAULT_BAY: BusLuggageBay = {
 
 export function CargoOptimizer({ initialCargo = [], bayDimensions = DEFAULT_BAY }: CargoOptimizerProps) {
   const [cargo, setCargo] = useState<Cargo[]>(initialCargo);
-  const [autoRotate, setAutoRotate] = useState(true);
+  const [autoRotate, setAutoRotate] = useState(false); // Default to false as per user request
   const [showStats, setShowStats] = useState(true);
 
   // Optimize cargo placement
@@ -33,11 +33,11 @@ export function CargoOptimizer({ initialCargo = [], bayDimensions = DEFAULT_BAY 
 
   const handleAddCargo = () => {
     const newCargo: Cargo = {
-      id: `cargo-${Date.now()}`,
-      length: Math.random() * 40 + 20,
-      width: Math.random() * 40 + 20,
-      height: Math.random() * 30 + 15,
-      weightKg: Math.random() * 30 + 5,
+      id: `C${(cargo.length + 1).toString().padStart(3, '0')}`, // Better IDs
+      length: Math.floor(Math.random() * 40 + 20),
+      width: Math.floor(Math.random() * 40 + 20),
+      height: Math.floor(Math.random() * 30 + 15),
+      weightKg: Math.floor(Math.random() * 30 + 5),
     };
     setCargo([...cargo, newCargo]);
   };
@@ -46,16 +46,28 @@ export function CargoOptimizer({ initialCargo = [], bayDimensions = DEFAULT_BAY 
     setCargo([]);
   };
 
+  const handleManualSort = (strategy: 'volume' | 'weight' | 'id') => {
+    const sorted = [...cargo].sort((a, b) => {
+      if (strategy === 'volume') return (b.length * b.width * b.height) - (a.length * a.width * a.height);
+      if (strategy === 'weight') return b.weightKg - a.weightKg;
+      return a.id.localeCompare(b.id);
+    });
+    setCargo(sorted);
+  };
+
   return (
     <div className="w-full space-y-6">
       {/* Control Panel */}
       <div className="rounded-2xl border border-white/10 bg-slate-900/80 p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-white">3D Cargo Optimizer</h3>
+          <div>
+            <h3 className="text-lg font-semibold text-white">3D Cargo Optimizer</h3>
+            <p className="text-xs text-slate-400 mt-1">Current Strategy: <span className="text-cyan-400 font-medium">{result.strategyName}</span></p>
+          </div>
           <div className="flex gap-2">
             <button
               onClick={() => setAutoRotate(!autoRotate)}
-              className="px-4 py-2 rounded-lg bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 transition text-sm"
+              className={`px-4 py-2 rounded-lg transition text-sm ${autoRotate ? 'bg-cyan-500/20 text-cyan-300' : 'bg-slate-800 text-slate-400'}`}
             >
               {autoRotate ? '⏸' : '▶'} Auto-Rotate
             </button>
@@ -68,13 +80,18 @@ export function CargoOptimizer({ initialCargo = [], bayDimensions = DEFAULT_BAY 
           </div>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <button
             onClick={handleAddCargo}
-            className="flex-1 px-4 py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-medium hover:opacity-90 transition"
+            className="flex-1 min-w-[200px] px-4 py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-medium hover:opacity-90 transition shadow-lg shadow-cyan-500/10"
           >
             + Add Random Cargo
           </button>
+          <div className="flex bg-slate-800 rounded-lg p-1 border border-white/5">
+            <button onClick={() => handleManualSort('volume')} className="px-3 py-1 text-xs text-slate-300 hover:text-white transition border-r border-white/5">Sort Volume</button>
+            <button onClick={() => handleManualSort('weight')} className="px-3 py-1 text-xs text-slate-300 hover:text-white transition border-r border-white/5">Sort Weight</button>
+            <button onClick={() => handleManualSort('id')} className="px-3 py-1 text-xs text-slate-300 hover:text-white transition">Reset</button>
+          </div>
           <button
             onClick={handleClearCargo}
             className="px-4 py-3 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/30 transition font-medium"
@@ -84,18 +101,20 @@ export function CargoOptimizer({ initialCargo = [], bayDimensions = DEFAULT_BAY 
         </div>
 
         {/* Cargo List */}
-        <div className="max-h-40 overflow-y-auto">
-          <div className="grid grid-cols-2 gap-2">
+        <div className="max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {cargo.map((item) => (
               <div
                 key={item.id}
-                className="text-xs p-2 rounded bg-slate-800/50 border border-white/5 text-slate-300"
+                className="text-xs p-2 rounded bg-slate-800/50 border border-white/5 text-slate-300 flex flex-col justify-between"
               >
-                <p className="font-mono">{item.id}</p>
+                <div className="flex justify-between items-start mb-1">
+                  <span className="font-mono text-cyan-400">{item.id}</span>
+                  <span className="text-[10px] bg-slate-700 px-1 rounded">{item.weightKg.toFixed(0)}kg</span>
+                </div>
                 <p className="text-slate-400">
                   {item.length.toFixed(0)}×{item.width.toFixed(0)}×{item.height.toFixed(0)} cm
                 </p>
-                <p className="text-slate-400">{item.weightKg.toFixed(1)} kg</p>
               </div>
             ))}
           </div>
@@ -106,9 +125,15 @@ export function CargoOptimizer({ initialCargo = [], bayDimensions = DEFAULT_BAY 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl border border-white/10 bg-slate-900/40 overflow-hidden"
+        className="relative rounded-2xl border border-white/10 bg-slate-900/40 overflow-hidden group shadow-2xl"
         style={{ height: '500px' }}
       >
+        <div className="absolute top-4 left-4 z-10 pointer-events-none">
+          <div className="bg-slate-950/80 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-[10px] text-slate-300">
+            <p className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-emerald-500"></span> Heavier items prioritized for bottom placement</p>
+            <p className="flex items-center gap-2 mt-1"><span className="w-2 h-2 rounded-full bg-blue-500"></span> Multi-strategy optimizer active</p>
+          </div>
+        </div>
         {result.placed.length > 0 ? (
           <Cargo3DVisualization
             cargo={result.placed}
@@ -117,7 +142,10 @@ export function CargoOptimizer({ initialCargo = [], bayDimensions = DEFAULT_BAY 
             autoRotate={autoRotate}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-slate-400">
+          <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-4">
+            <div className="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center animate-pulse">
+              📦
+            </div>
             <p>Add cargo to visualize optimization</p>
           </div>
         )}
@@ -128,23 +156,12 @@ export function CargoOptimizer({ initialCargo = [], bayDimensions = DEFAULT_BAY 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-2 md:grid-cols-3 gap-4"
+          className="grid grid-cols-2 md:grid-cols-4 gap-4"
         >
-          <StatCard label="Total Cargo" value={stats.totalCargo} />
-          <StatCard label="Packed" value={stats.packedCargo} />
-          <StatCard label="Unpacked" value={stats.unpackedCargo} />
-          <StatCard label="Packing Rate" value={stats.packingRate} highlight />
-          <StatCard
-            label="Volume Used"
-            value={stats.volumeUtilization}
-            highlight
-          />
-          <StatCard
-            label="Weight Used"
-            value={stats.weightUtilization}
-            highlight
-          />
-          <StatCard label="Total Weight" value={stats.totalWeight} />
+          <StatCard label="Total Items" value={stats.totalCargo} />
+          <StatCard label="Successfully Packed" value={stats.packedCargo} highlight />
+          <StatCard label="Volume Utilization" value={stats.volumeUtilization} highlight />
+          <StatCard label="Weight Utilization" value={stats.weightUtilization} />
         </motion.div>
       )}
 
@@ -153,11 +170,11 @@ export function CargoOptimizer({ initialCargo = [], bayDimensions = DEFAULT_BAY 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="rounded-2xl border border-white/10 bg-gradient-to-r from-slate-900/60 to-slate-800/60 p-6"
+        className="rounded-2xl border border-white/10 bg-gradient-to-r from-slate-900/60 to-slate-800/60 p-6 shadow-xl"
       >
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
           <div>
-            <p className="text-slate-400 text-sm">Efficiency</p>
+            <p className="text-slate-400 text-sm mb-1">Overall Efficiency</p>
             <p className="text-2xl font-bold text-cyan-400">
               {(parseFloat(stats.volumeUtilization) * 0.7 +
                 parseFloat(stats.weightUtilization) * 0.3).toFixed(1)}
@@ -165,21 +182,21 @@ export function CargoOptimizer({ initialCargo = [], bayDimensions = DEFAULT_BAY 
             </p>
           </div>
           <div>
-            <p className="text-slate-400 text-sm">Volume Used</p>
-            <p className="text-2xl font-bold text-blue-400">
-              {stats.volumeUtilization}
+            <p className="text-slate-400 text-sm mb-1">Selected Strategy</p>
+            <p className="text-sm font-bold text-blue-400 uppercase tracking-wider leading-tight">
+              {result.strategyName}
             </p>
           </div>
           <div>
-            <p className="text-slate-400 text-sm">Weight Capacity</p>
+            <p className="text-slate-400 text-sm mb-1">Total Weight</p>
             <p className="text-2xl font-bold text-purple-400">
-              {stats.weightUtilization}
+              {stats.totalWeight}
             </p>
           </div>
           <div>
-            <p className="text-slate-400 text-sm">Cargo Fit</p>
+            <p className="text-slate-400 text-sm mb-1">Packing Rate</p>
             <p className="text-2xl font-bold text-emerald-400">
-              {stats.packingRate}
+              {((result.placed.length / (result.placed.length + result.unplaced.length || 1)) * 100).toFixed(0)}%
             </p>
           </div>
         </div>
