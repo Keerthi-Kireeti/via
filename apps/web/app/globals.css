@@ -6,12 +6,37 @@
   color-scheme: dark;
 }
 
+* {
+  @apply transition-colors duration-150;
+}
+
 body {
-  @apply bg-slate-950 text-white antialiased;
-  background-image: radial-gradient(circle at top, rgba(34, 211, 238, 0.12), transparent 32%), linear-gradient(180deg, #020617 0%, #0f172a 65%, #111827 100%);
+  @apply bg-slate-950 text-white antialiased selection:bg-cyan-500/30;
+  background-image: radial-gradient(circle at top, rgba(34, 211, 238, 0.08), transparent 40%), linear-gradient(180deg, #020617 0%, #0f172a 65%, #111827 100%);
+  background-attachment: fixed;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 .transit-grid {
-  background-image: radial-gradient(circle at center, rgba(34,211,238,0.12) 0, rgba(15,23,42,0) 45%), linear-gradient(rgba(148,163,184,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.08) 1px, transparent 1px);
+  background-image: radial-gradient(circle at center, rgba(34,211,238,0.08) 0, rgba(15,23,42,0) 45%), linear-gradient(rgba(148,163,184,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.05) 1px, transparent 1px);
   background-size: auto, 56px 56px, 56px 56px;
+  will-change: transform;
 }
+
+/* Smooth scroll for the whole site */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Optimization for laggy elements */
+.rounded-2xl, .rounded-xl {
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* Faster hover transitions */
+.hover\:scale-105:hover {
+  @apply transition-transform duration-200 ease-out;
+}
+
