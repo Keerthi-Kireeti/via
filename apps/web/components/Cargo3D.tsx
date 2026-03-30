@@ -68,7 +68,7 @@ export function Cargo3DVisualization({
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFShadowShadowMap;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
     containerRef.current.appendChild(canvas);
     rendererRef.current = renderer;
 
