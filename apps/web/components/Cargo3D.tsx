@@ -275,10 +275,35 @@ export function Cargo3DVisualization({
       containerRef.current?.classList.remove('cursor-move');
     };
 
+    // Zoom interaction (Wheel)
+    const onWheel = (event: WheelEvent) => {
+      if (!cameraRef.current) return;
+      event.preventDefault();
+
+      const pos = cameraRef.current.position;
+      const radius = Math.sqrt(pos.x ** 2 + pos.y ** 2 + pos.z ** 2);
+      
+      // Calculate new radius with zoom factor
+      const zoomFactor = 1.1;
+      let newRadius = event.deltaY > 0 ? radius * zoomFactor : radius / zoomFactor;
+      
+      // Clamp zoom limits based on bay size
+      const minRadius = Math.max(bay.width, bay.height, bay.length) * 0.5;
+      const maxRadius = Math.max(bay.width, bay.height, bay.length) * 5;
+      newRadius = Math.max(minRadius, Math.min(maxRadius, newRadius));
+      
+      const ratio = newRadius / radius;
+      cameraRef.current.position.x *= ratio;
+      cameraRef.current.position.y *= ratio;
+      cameraRef.current.position.z *= ratio;
+      cameraRef.current.lookAt(bay.width / 2, bay.height / 2, bay.length / 2);
+    };
+
     renderer.domElement.addEventListener('mousemove', onMouseMove);
     renderer.domElement.addEventListener('mousedown', onMouseDown);
     renderer.domElement.addEventListener('mouseup', onMouseUp);
     renderer.domElement.addEventListener('mouseleave', onMouseUp);
+    renderer.domElement.addEventListener('wheel', onWheel, { passive: false });
 
     // Animation loop
     let animationFrameId: number;
@@ -288,9 +313,8 @@ export function Cargo3DVisualization({
       animationFrameId = requestAnimationFrame(animate);
       time += 0.016;
 
-      // Auto-rotate if enabled and not dragging - DISABLED as per user request
-      /*
-      if (autoRotate && !controlsRef.current.isDragging) {
+      // Auto-rotate if enabled and not dragging - slightly faster
+      if (autoRotate && !controlsRef.current.isDragging && !controlsRef.current.isMovingCargo) {
         const pos = camera.position;
         const radius = Math.sqrt(pos.x ** 2 + pos.y ** 2 + pos.z ** 2);
         const theta = Math.atan2(pos.z, pos.x) + 0.0015; // Faster auto-rotate
@@ -300,16 +324,6 @@ export function Cargo3DVisualization({
         camera.position.z = radius * Math.sin(phi) * Math.sin(theta);
         camera.lookAt(bay.width / 2, bay.height / 2, bay.length / 2);
       }
-      */
-
-      // Smooth subtle animations for cargo - DISABLED as per user request
-      /*
-      cargoMeshes.forEach((mesh) => {
-        mesh.position.y += Math.sin(time * 2.0 + mesh.userData.index) * 0.05; 
-        mesh.rotation.x += 0.001;
-        mesh.rotation.y += 0.0015;
-      });
-      */
 
       renderer.render(scene, camera);
     };
@@ -337,6 +351,7 @@ export function Cargo3DVisualization({
         rendererRef.current.domElement.removeEventListener('mousedown', onMouseDown);
         rendererRef.current.domElement.removeEventListener('mouseup', onMouseUp);
         rendererRef.current.domElement.removeEventListener('mouseleave', onMouseUp);
+        rendererRef.current.domElement.removeEventListener('wheel', onWheel);
       }
       cancelAnimationFrame(animationFrameId);
       containerRef.current?.removeChild(canvas);
