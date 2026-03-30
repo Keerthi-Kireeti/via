@@ -332,10 +332,12 @@ export function Cargo3DVisualization({
     // Cleanup
     return () => {
       window.removeEventListener('resize', onWindowResize);
-      renderer.domElement.removeEventListener('mousemove', onMouseMove);
-      renderer.domElement.removeEventListener('mousedown', onMouseDown);
-      renderer.domElement.removeEventListener('mouseup', onMouseUp);
-      renderer.domElement.removeEventListener('mouseleave', onMouseUp);
+      if (rendererRef.current) {
+        rendererRef.current.domElement.removeEventListener('mousemove', onMouseMove);
+        rendererRef.current.domElement.removeEventListener('mousedown', onMouseDown);
+        rendererRef.current.domElement.removeEventListener('mouseup', onMouseUp);
+        rendererRef.current.domElement.removeEventListener('mouseleave', onMouseUp);
+      }
       cancelAnimationFrame(animationFrameId);
       containerRef.current?.removeChild(canvas);
       bayGeometry.dispose();
@@ -345,9 +347,10 @@ export function Cargo3DVisualization({
       bayFloorMaterial.dispose();
       cargoGeometryCache.forEach(geo => geo.dispose());
       cargoMeshes.forEach((mesh) => {
-        (mesh.material as THREE.Material).dispose();
+        if (mesh.material) (mesh.material as THREE.Material).dispose();
+        if (mesh.geometry) (mesh.geometry as THREE.BufferGeometry).dispose();
       });
-      renderer.dispose();
+      if (rendererRef.current) rendererRef.current.dispose();
     };
   }, [cargo, bay, autoRotate]);
 
