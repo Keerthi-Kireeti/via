@@ -40,53 +40,59 @@ export function Cargo3DVisualization({
     const isDarkMode = document.documentElement.classList.contains('dark') || 
                        window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-    // Scene setup with fog for depth
+    // Scene setup - No fog for maximum clarity
     const scene = new THREE.Scene();
-    scene.background = isDarkMode ? new THREE.Color(0x0f172a) : new THREE.Color(0xf1f5f9);
-    scene.fog = new THREE.Fog(isDarkMode ? 0x0f172a : 0xf1f5f9, 1000, 200);
+    scene.background = isDarkMode ? new THREE.Color(0x0f172a) : new THREE.Color(0xf8fafc);
     sceneRef.current = scene;
 
     // Camera setup
     const width = containerRef.current.clientWidth;
     const height = containerRef.current.clientHeight;
-    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 10000);
+    const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 10000); // Slightly narrower FOV for less distortion
     
     // Set camera based on bay dimensions
     camera.position.set(
-      bay.width * 1.2,
-      bay.height * 1.2,
-      bay.length * 1.2
+      bay.width * 1.5,
+      bay.height * 1.5,
+      bay.length * 1.5
     );
     camera.lookAt(bay.width / 2, bay.height / 2, bay.length / 2);
     cameraRef.current = camera;
 
-    // Renderer setup with better performance
+    // Renderer setup with high quality
     const canvas = document.createElement('canvas');
     const renderer = new THREE.WebGLRenderer({ 
       canvas,
       antialias: true,
       alpha: true,
       powerPreference: 'high-performance',
+      precision: 'highp',
     });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     containerRef.current.appendChild(canvas);
     rendererRef.current = renderer;
 
-    // Enhanced lighting - simplified
-    const ambientLight = new THREE.AmbientLight(0xffffff, isDarkMode ? 0.7 : 0.9);
+    // Enhanced lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, isDarkMode ? 0.6 : 0.8);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
-    directionalLight.position.set(100, 100, 100);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+    directionalLight.position.set(200, 300, 200);
+    directionalLight.castShadow = true;
+    directionalLight.shadow.mapSize.width = 2048;
+    directionalLight.shadow.mapSize.height = 2048;
+    directionalLight.shadow.camera.far = 2000;
     scene.add(directionalLight);
 
-    // Add a point light for atmosphere - simplified
-    const pointLight = new THREE.PointLight(0x00ffff, 0.4);
+    // Add a point light for vibrant colors
+    const pointLight = new THREE.PointLight(0x00ffff, 0.5);
     pointLight.position.set(bay.width, bay.height, 0);
     scene.add(pointLight);
 
-    // Draw luggage bay with simplified effect
+    // Draw luggage bay
     const bayGeometry = new THREE.BoxGeometry(bay.width, bay.height, bay.length);
     const bayEdges = new THREE.EdgesGeometry(bayGeometry);
     const bayLine = new THREE.LineSegments(
@@ -94,24 +100,27 @@ export function Cargo3DVisualization({
       new THREE.LineBasicMaterial({ 
         color: isDarkMode ? 0x00ffff : 0x0ea5e9,
         transparent: true,
-        opacity: 0.5,
+        opacity: 0.4,
       })
     );
     bayLine.position.set(bay.width / 2, bay.height / 2, bay.length / 2);
     scene.add(bayLine);
 
-    // Semi-transparent bay background - simplified
-    const bayMaterial = new THREE.MeshBasicMaterial({
+    // Semi-transparent bay floor (receive shadows)
+    const bayFloorGeometry = new THREE.PlaneGeometry(bay.width, bay.length);
+    const bayFloorMaterial = new THREE.MeshPhongMaterial({
       color: isDarkMode ? 0x1e293b : 0xe2e8f0,
       transparent: true,
-      opacity: 0.05,
-      side: THREE.BackSide,
+      opacity: 0.1,
+      side: THREE.DoubleSide,
     });
-    const bayMesh = new THREE.Mesh(bayGeometry, bayMaterial);
-    bayMesh.position.set(bay.width / 2, bay.height / 2, bay.length / 2);
-    scene.add(bayMesh);
+    const bayFloor = new THREE.Mesh(bayFloorGeometry, bayFloorMaterial);
+    bayFloor.rotation.x = -Math.PI / 2;
+    bayFloor.position.set(bay.width / 2, 0, bay.length / 2);
+    bayFloor.receiveShadow = true;
+    scene.add(bayFloor);
 
-    // Use shared geometries and materials for cargo to save memory
+    // Use shared geometries and materials for cargo
     const cargoGeometryCache = new Map<string, THREE.BoxGeometry>();
     const cargoMeshes: THREE.Mesh[] = [];
 
@@ -124,10 +133,12 @@ export function Cargo3DVisualization({
       }
 
       const colorIndex = index % CARGO_COLORS.length;
-      const cargoMaterial = new THREE.MeshLambertMaterial({ // Lighter than Phong
+      const cargoMaterial = new THREE.MeshPhongMaterial({
         color: CARGO_COLORS[colorIndex],
         emissive: isDarkMode ? 0x001a4d : 0x000000,
-        emissiveIntensity: 0.2,
+        emissiveIntensity: 0.1,
+        shininess: 60,
+        specular: 0x444444,
         side: THREE.FrontSide,
       });
 
@@ -146,14 +157,17 @@ export function Cargo3DVisualization({
         item.position.z + item.length / 2
       );
 
-      // Add edges for clarity - simplified
+      cargoMesh.castShadow = true;
+      cargoMesh.receiveShadow = true;
+
+      // Add edges for clarity
       const edges = new THREE.EdgesGeometry(cargoGeometry);
       const lineSegments = new THREE.LineSegments(
         edges,
         new THREE.LineBasicMaterial({ 
           color: isDarkMode ? 0xffffff : 0x000000,
           transparent: true,
-          opacity: 0.3,
+          opacity: 0.2,
         })
       );
       cargoMesh.add(lineSegments);
@@ -164,14 +178,14 @@ export function Cargo3DVisualization({
 
     cargoMeshesRef.current = cargoMeshes;
 
-    // Plane for dragging cargo (always parallel to camera view)
+    // Plane for dragging cargo
     const dragPlane = new THREE.Mesh(
       new THREE.PlaneGeometry(10000, 10000),
       new THREE.MeshBasicMaterial({ visible: false })
     );
     scene.add(dragPlane);
 
-    // Mouse interaction - throttled/simplified
+    // Mouse interaction
     const onMouseMove = (event: MouseEvent) => {
       if (!rendererRef.current || !cameraRef.current) return;
 
@@ -181,8 +195,8 @@ export function Cargo3DVisualization({
 
       // Handle dragging for rotation
       if (controlsRef.current.isDragging && !event.ctrlKey) {
-        const deltaX = event.movementX * 0.01; 
-        const deltaY = event.movementY * 0.01;
+        const deltaX = event.movementX * 0.008; 
+        const deltaY = event.movementY * 0.008;
         
         const pos = cameraRef.current.position;
         const radius = Math.sqrt(pos.x ** 2 + pos.y ** 2 + pos.z ** 2);
@@ -207,13 +221,13 @@ export function Cargo3DVisualization({
         }
       }
 
-      // Raycasting - only if not dragging anything
+      // Raycasting
       if (!controlsRef.current.isDragging && !controlsRef.current.isMovingCargo) {
         raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
         const intersects = raycasterRef.current.intersectObjects(cargoMeshes);
 
         cargoMeshes.forEach((mesh) => {
-          const mat = mesh.material as THREE.MeshLambertMaterial;
+          const mat = mesh.material as THREE.MeshPhongMaterial;
           if (mat && mat.emissive) {
             mat.emissive.setHex(mesh.userData.originalEmissive);
           }
@@ -221,7 +235,7 @@ export function Cargo3DVisualization({
 
         if (intersects.length > 0) {
           const hovered = intersects[0].object as THREE.Mesh;
-          const mat = hovered.material as THREE.MeshLambertMaterial;
+          const mat = hovered.material as THREE.MeshPhongMaterial;
           if (mat && mat.emissive) {
             mat.emissive.setHex(0x00d4ff);
             setHoveredId(hovered.userData.cargoId);
@@ -325,7 +339,10 @@ export function Cargo3DVisualization({
       cancelAnimationFrame(animationFrameId);
       containerRef.current?.removeChild(canvas);
       bayGeometry.dispose();
-      bayMaterial.dispose();
+      bayLine.geometry.dispose();
+      (bayLine.material as THREE.Material).dispose();
+      bayFloorGeometry.dispose();
+      bayFloorMaterial.dispose();
       cargoGeometryCache.forEach(geo => geo.dispose());
       cargoMeshes.forEach((mesh) => {
         (mesh.material as THREE.Material).dispose();
