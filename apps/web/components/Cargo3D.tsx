@@ -57,54 +57,51 @@ export function Cargo3DVisualization({
     camera.lookAt(bay.width / 2, bay.height / 2, bay.length / 2);
     cameraRef.current = camera;
 
-    // Renderer setup with better quality
+    // Renderer setup with better performance
     const canvas = document.createElement('canvas');
     const renderer = new THREE.WebGLRenderer({ 
       canvas,
-      antialias: true,
+      antialias: false, // Disabled for performance
       alpha: true,
-      precision: 'highp',
+      powerPreference: 'high-performance',
+      precision: 'lowp', // Reduced precision for speed
     });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFShadowMap;
+    renderer.setPixelRatio(1); // Force 1 for speed, avoid high DPI lag
+    renderer.shadowMap.enabled = false; // Disable shadows for massive speed boost
     containerRef.current.appendChild(canvas);
     rendererRef.current = renderer;
 
-    // Enhanced lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    // Enhanced lighting - simplified
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(150, 150, 150);
-    directionalLight.castShadow = true;
-    directionalLight.shadow.mapSize.width = 2048;
-    directionalLight.shadow.mapSize.height = 2048;
-    directionalLight.shadow.camera.far = 500;
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+    directionalLight.position.set(100, 100, 100);
     scene.add(directionalLight);
 
-    // Add a point light for atmosphere
-    const pointLight = new THREE.PointLight(0x00ffff, 0.3);
+    // Add a point light for atmosphere - simplified
+    const pointLight = new THREE.PointLight(0x00ffff, 0.2);
     pointLight.position.set(bay.width, bay.height, 0);
     scene.add(pointLight);
 
-    // Draw luggage bay with gradient effect
+    // Draw luggage bay with simplified effect
     const bayGeometry = new THREE.BoxGeometry(bay.width, bay.height, bay.length);
     const bayEdges = new THREE.EdgesGeometry(bayGeometry);
     const bayLine = new THREE.LineSegments(
       bayEdges,
       new THREE.LineBasicMaterial({ 
         color: 0x00ffff,
-        linewidth: 2,
+        transparent: true,
+        opacity: 0.5,
         fog: false
       })
     );
     bayLine.position.set(bay.width / 2, bay.height / 2, bay.length / 2);
     scene.add(bayLine);
 
-    // Semi-transparent bay background
-    const bayMaterial = new THREE.MeshPhongMaterial({
+    // Semi-transparent bay background - simplified
+    const bayMaterial = new THREE.MeshBasicMaterial({
       color: 0x1e293b,
       transparent: true,
       opacity: 0.05,
@@ -114,22 +111,22 @@ export function Cargo3DVisualization({
     bayMesh.position.set(bay.width / 2, bay.height / 2, bay.length / 2);
     scene.add(bayMesh);
 
-    // Draw cargo boxes
+    // Use shared geometries and materials for cargo to save memory
+    const cargoGeometryCache = new Map<string, THREE.BoxGeometry>();
     const cargoMeshes: THREE.Mesh[] = [];
 
     cargo.forEach((item, index) => {
-      const cargoGeometry = new THREE.BoxGeometry(
-        item.width,
-        item.height,
-        item.length
-      );
+      const geoKey = `${item.width}-${item.height}-${item.length}`;
+      let cargoGeometry = cargoGeometryCache.get(geoKey);
+      if (!cargoGeometry) {
+        cargoGeometry = new THREE.BoxGeometry(item.width, item.height, item.length);
+        cargoGeometryCache.set(geoKey, cargoGeometry);
+      }
 
       const colorIndex = index % CARGO_COLORS.length;
-      const cargoMaterial = new THREE.MeshPhongMaterial({
+      const cargoMaterial = new THREE.MeshLambertMaterial({ // Lighter than Phong
         color: CARGO_COLORS[colorIndex],
         emissive: 0x001a4d,
-        shininess: 100,
-        flatShading: false,
         side: THREE.FrontSide,
       });
 
@@ -148,16 +145,14 @@ export function Cargo3DVisualization({
         item.position.z + item.length / 2
       );
 
-      cargoMesh.castShadow = true;
-      cargoMesh.receiveShadow = true;
-
-      // Add edges for clarity
+      // Add edges for clarity - simplified
       const edges = new THREE.EdgesGeometry(cargoGeometry);
       const lineSegments = new THREE.LineSegments(
         edges,
         new THREE.LineBasicMaterial({ 
           color: 0xffffff,
-          linewidth: 1,
+          transparent: true,
+          opacity: 0.3,
           fog: false
         })
       );
@@ -169,7 +164,7 @@ export function Cargo3DVisualization({
 
     cargoMeshesRef.current = cargoMeshes;
 
-    // Mouse interaction
+    // Mouse interaction - throttled/simplified
     const onMouseMove = (event: MouseEvent) => {
       const rect = renderer.domElement.getBoundingClientRect();
       mouseRef.current.x = ((event.clientX - rect.left) / width) * 2 - 1;
@@ -177,8 +172,8 @@ export function Cargo3DVisualization({
 
       // Handle dragging for rotation
       if (controlsRef.current.isDragging) {
-        const deltaX = event.movementX * 0.01;
-        const deltaY = event.movementY * 0.01;
+        const deltaX = event.movementX * 0.015; // Faster rotation
+        const deltaY = event.movementY * 0.015;
         
         if (camera) {
           const pos = camera.position;
@@ -194,22 +189,24 @@ export function Cargo3DVisualization({
         }
       }
 
-      // Raycasting for hover effects
-      raycasterRef.current.setFromCamera(mouseRef.current, camera);
-      const intersects = raycasterRef.current.intersectObjects(cargoMeshes);
+      // Raycasting - only if not dragging
+      if (!controlsRef.current.isDragging) {
+        raycasterRef.current.setFromCamera(mouseRef.current, camera);
+        const intersects = raycasterRef.current.intersectObjects(cargoMeshes);
 
-      cargoMeshes.forEach((mesh) => {
-        (mesh.material as THREE.MeshPhongMaterial).emissive.setHex(
-          mesh.userData.originalEmissive
-        );
-      });
+        cargoMeshes.forEach((mesh) => {
+          (mesh.material as THREE.MeshLambertMaterial).emissive.setHex(
+            mesh.userData.originalEmissive
+          );
+        });
 
-      if (intersects.length > 0) {
-        const hovered = intersects[0].object as THREE.Mesh;
-        (hovered.material as THREE.MeshPhongMaterial).emissive.setHex(0x00d4ff);
-        setHoveredId(hovered.userData.cargoId);
-      } else {
-        setHoveredId(null);
+        if (intersects.length > 0) {
+          const hovered = intersects[0].object as THREE.Mesh;
+          (hovered.material as THREE.MeshLambertMaterial).emissive.setHex(0x00d4ff);
+          setHoveredId(hovered.userData.cargoId);
+        } else {
+          setHoveredId(null);
+        }
       }
     };
 
@@ -234,11 +231,11 @@ export function Cargo3DVisualization({
       animationFrameId = requestAnimationFrame(animate);
       time += 0.016;
 
-      // Auto-rotate if enabled and not dragging
+      // Auto-rotate if enabled and not dragging - slightly faster
       if (autoRotate && !controlsRef.current.isDragging) {
         const pos = camera.position;
         const radius = Math.sqrt(pos.x ** 2 + pos.y ** 2 + pos.z ** 2);
-        const theta = Math.atan2(pos.z, pos.x) + 0.0005;
+        const theta = Math.atan2(pos.z, pos.x) + 0.0015; // Faster auto-rotate
         const phi = Math.acos(pos.y / radius);
         
         camera.position.x = radius * Math.sin(phi) * Math.cos(theta);
@@ -246,12 +243,11 @@ export function Cargo3DVisualization({
         camera.lookAt(bay.width / 2, bay.height / 2, bay.length / 2);
       }
 
-      // Subtle animations for cargo
+      // Smooth subtle animations for cargo
       cargoMeshes.forEach((mesh) => {
-        const baseY = mesh.position.y;
-        mesh.position.y = baseY + Math.sin(time * 1.5 + mesh.userData.index) * 0.5;
-        mesh.rotation.x += 0.0005;
-        mesh.rotation.y += 0.0008;
+        mesh.position.y += Math.sin(time * 2.0 + mesh.userData.index) * 0.05; // Reduced amplitude, increased speed
+        mesh.rotation.x += 0.001;
+        mesh.rotation.y += 0.0015;
       });
 
       renderer.render(scene, camera);
@@ -283,8 +279,8 @@ export function Cargo3DVisualization({
       containerRef.current?.removeChild(canvas);
       bayGeometry.dispose();
       bayMaterial.dispose();
+      cargoGeometryCache.forEach(geo => geo.dispose());
       cargoMeshes.forEach((mesh) => {
-        (mesh.geometry as THREE.BufferGeometry).dispose();
         (mesh.material as THREE.Material).dispose();
       });
       renderer.dispose();
