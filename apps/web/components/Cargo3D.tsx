@@ -28,7 +28,7 @@ export function Cargo3DVisualization({
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const cargoMeshesRef = useRef<THREE.Mesh[]>([]);
-  const controlsRef = useRef({ x: 0, y: 0, isDragging: false });
+  const controlsRef = useRef({ x: 0, y: 0, isDragging: false, isMovingCargo: false, activeCargoMesh: null as THREE.Mesh | null });
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const raycasterRef = useRef(new THREE.Raycaster());
   const mouseRef = useRef(new THREE.Vector2());
@@ -36,10 +36,14 @@ export function Cargo3DVisualization({
   useEffect(() => {
     if (!containerRef.current) return;
 
+    // Detect theme (dark/light)
+    const isDarkMode = document.documentElement.classList.contains('dark') || 
+                       window.matchMedia('(prefers-color-scheme: dark)').matches;
+
     // Scene setup with fog for depth
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0f172a);
-    scene.fog = new THREE.Fog(0x0f172a, 1000, 200);
+    scene.background = isDarkMode ? new THREE.Color(0x0f172a) : new THREE.Color(0xf1f5f9);
+    scene.fog = new THREE.Fog(isDarkMode ? 0x0f172a : 0xf1f5f9, 1000, 200);
     sceneRef.current = scene;
 
     // Camera setup
@@ -48,11 +52,10 @@ export function Cargo3DVisualization({
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 10000);
     
     // Set camera based on bay dimensions
-    const maxDim = Math.max(bay.length, bay.width, bay.height);
     camera.position.set(
-      bay.width * 0.7,
-      bay.height * 0.7,
-      bay.length * 0.7
+      bay.width * 1.2,
+      bay.height * 1.2,
+      bay.length * 1.2
     );
     camera.lookAt(bay.width / 2, bay.height / 2, bay.length / 2);
     cameraRef.current = camera;
@@ -61,19 +64,17 @@ export function Cargo3DVisualization({
     const canvas = document.createElement('canvas');
     const renderer = new THREE.WebGLRenderer({ 
       canvas,
-      antialias: false, // Disabled for performance
+      antialias: true,
       alpha: true,
       powerPreference: 'high-performance',
-      precision: 'lowp', // Reduced precision for speed
     });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(1); // Force 1 for speed, avoid high DPI lag
-    renderer.shadowMap.enabled = false; // Disable shadows for massive speed boost
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     containerRef.current.appendChild(canvas);
     rendererRef.current = renderer;
 
     // Enhanced lighting - simplified
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+    const ambientLight = new THREE.AmbientLight(0xffffff, isDarkMode ? 0.7 : 0.9);
     scene.add(ambientLight);
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
@@ -81,7 +82,7 @@ export function Cargo3DVisualization({
     scene.add(directionalLight);
 
     // Add a point light for atmosphere - simplified
-    const pointLight = new THREE.PointLight(0x00ffff, 0.2);
+    const pointLight = new THREE.PointLight(0x00ffff, 0.4);
     pointLight.position.set(bay.width, bay.height, 0);
     scene.add(pointLight);
 
@@ -91,10 +92,9 @@ export function Cargo3DVisualization({
     const bayLine = new THREE.LineSegments(
       bayEdges,
       new THREE.LineBasicMaterial({ 
-        color: 0x00ffff,
+        color: isDarkMode ? 0x00ffff : 0x0ea5e9,
         transparent: true,
         opacity: 0.5,
-        fog: false
       })
     );
     bayLine.position.set(bay.width / 2, bay.height / 2, bay.length / 2);
@@ -102,7 +102,7 @@ export function Cargo3DVisualization({
 
     // Semi-transparent bay background - simplified
     const bayMaterial = new THREE.MeshBasicMaterial({
-      color: 0x1e293b,
+      color: isDarkMode ? 0x1e293b : 0xe2e8f0,
       transparent: true,
       opacity: 0.05,
       side: THREE.BackSide,
@@ -126,7 +126,8 @@ export function Cargo3DVisualization({
       const colorIndex = index % CARGO_COLORS.length;
       const cargoMaterial = new THREE.MeshLambertMaterial({ // Lighter than Phong
         color: CARGO_COLORS[colorIndex],
-        emissive: 0x001a4d,
+        emissive: isDarkMode ? 0x001a4d : 0x000000,
+        emissiveIntensity: 0.2,
         side: THREE.FrontSide,
       });
 
@@ -134,7 +135,7 @@ export function Cargo3DVisualization({
       cargoMesh.userData = {
         cargoId: item.id,
         originalColor: CARGO_COLORS[colorIndex],
-        originalEmissive: 0x001a4d,
+        originalEmissive: isDarkMode ? 0x001a4d : 0x000000,
         index,
       };
 
@@ -150,10 +151,9 @@ export function Cargo3DVisualization({
       const lineSegments = new THREE.LineSegments(
         edges,
         new THREE.LineBasicMaterial({ 
-          color: 0xffffff,
+          color: isDarkMode ? 0xffffff : 0x000000,
           transparent: true,
           opacity: 0.3,
-          fog: false
         })
       );
       cargoMesh.add(lineSegments);
@@ -164,58 +164,101 @@ export function Cargo3DVisualization({
 
     cargoMeshesRef.current = cargoMeshes;
 
+    // Plane for dragging cargo (always parallel to camera view)
+    const dragPlane = new THREE.Mesh(
+      new THREE.PlaneGeometry(10000, 10000),
+      new THREE.MeshBasicMaterial({ visible: false })
+    );
+    scene.add(dragPlane);
+
     // Mouse interaction - throttled/simplified
     const onMouseMove = (event: MouseEvent) => {
-      const rect = renderer.domElement.getBoundingClientRect();
+      if (!rendererRef.current || !cameraRef.current) return;
+
+      const rect = rendererRef.current.domElement.getBoundingClientRect();
       mouseRef.current.x = ((event.clientX - rect.left) / width) * 2 - 1;
       mouseRef.current.y = -((event.clientY - rect.top) / height) * 2 + 1;
 
       // Handle dragging for rotation
-      if (controlsRef.current.isDragging) {
-        const deltaX = event.movementX * 0.015; // Faster rotation
-        const deltaY = event.movementY * 0.015;
+      if (controlsRef.current.isDragging && !event.ctrlKey) {
+        const deltaX = event.movementX * 0.01; 
+        const deltaY = event.movementY * 0.01;
         
-        if (camera) {
-          const pos = camera.position;
-          const radius = Math.sqrt(pos.x ** 2 + pos.y ** 2 + pos.z ** 2);
-          const theta = Math.atan2(pos.z, pos.x) - deltaX;
-          const phi = Math.acos(pos.y / radius) + deltaY;
-          const clampedPhi = Math.max(0.1, Math.min(Math.PI - 0.1, phi));
-          
-          camera.position.x = radius * Math.sin(clampedPhi) * Math.cos(theta);
-          camera.position.y = radius * Math.cos(clampedPhi);
-          camera.position.z = radius * Math.sin(clampedPhi) * Math.sin(theta);
-          camera.lookAt(bay.width / 2, bay.height / 2, bay.length / 2);
+        const pos = cameraRef.current.position;
+        const radius = Math.sqrt(pos.x ** 2 + pos.y ** 2 + pos.z ** 2);
+        const theta = Math.atan2(pos.z, pos.x) - deltaX;
+        const phi = Math.acos(pos.y / radius) + deltaY;
+        const clampedPhi = Math.max(0.1, Math.min(Math.PI - 0.1, phi));
+        
+        cameraRef.current.position.x = radius * Math.sin(clampedPhi) * Math.cos(theta);
+        cameraRef.current.position.y = radius * Math.cos(clampedPhi);
+        cameraRef.current.position.z = radius * Math.sin(clampedPhi) * Math.sin(theta);
+        cameraRef.current.lookAt(bay.width / 2, bay.height / 2, bay.length / 2);
+      }
+
+      // Handle Cargo Movement (Ctrl + Drag)
+      if (controlsRef.current.isMovingCargo && controlsRef.current.activeCargoMesh) {
+        raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
+        const intersects = raycasterRef.current.intersectObject(dragPlane);
+        
+        if (intersects.length > 0) {
+          const point = intersects[0].point;
+          controlsRef.current.activeCargoMesh.position.copy(point);
         }
       }
 
-      // Raycasting - only if not dragging
-      if (!controlsRef.current.isDragging) {
-        raycasterRef.current.setFromCamera(mouseRef.current, camera);
+      // Raycasting - only if not dragging anything
+      if (!controlsRef.current.isDragging && !controlsRef.current.isMovingCargo) {
+        raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
         const intersects = raycasterRef.current.intersectObjects(cargoMeshes);
 
         cargoMeshes.forEach((mesh) => {
-          (mesh.material as THREE.MeshLambertMaterial).emissive.setHex(
-            mesh.userData.originalEmissive
-          );
+          const mat = mesh.material as THREE.MeshLambertMaterial;
+          if (mat && mat.emissive) {
+            mat.emissive.setHex(mesh.userData.originalEmissive);
+          }
         });
 
         if (intersects.length > 0) {
           const hovered = intersects[0].object as THREE.Mesh;
-          (hovered.material as THREE.MeshLambertMaterial).emissive.setHex(0x00d4ff);
-          setHoveredId(hovered.userData.cargoId);
+          const mat = hovered.material as THREE.MeshLambertMaterial;
+          if (mat && mat.emissive) {
+            mat.emissive.setHex(0x00d4ff);
+            setHoveredId(hovered.userData.cargoId);
+          }
         } else {
           setHoveredId(null);
         }
       }
     };
 
-    const onMouseDown = () => {
-      controlsRef.current.isDragging = true;
+    const onMouseDown = (event: MouseEvent) => {
+      if (!cameraRef.current) return;
+
+      if (event.ctrlKey) {
+        raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
+        const intersects = raycasterRef.current.intersectObjects(cargoMeshes);
+        
+        if (intersects.length > 0) {
+          controlsRef.current.isMovingCargo = true;
+          controlsRef.current.activeCargoMesh = intersects[0].object as THREE.Mesh;
+          
+          // Align drag plane to face camera and pass through the object
+          dragPlane.position.copy(controlsRef.current.activeCargoMesh.position);
+          dragPlane.lookAt(cameraRef.current.position);
+          
+          containerRef.current?.classList.add('cursor-move');
+        }
+      } else {
+        controlsRef.current.isDragging = true;
+      }
     };
 
     const onMouseUp = () => {
       controlsRef.current.isDragging = false;
+      controlsRef.current.isMovingCargo = false;
+      controlsRef.current.activeCargoMesh = null;
+      containerRef.current?.classList.remove('cursor-move');
     };
 
     renderer.domElement.addEventListener('mousemove', onMouseMove);
