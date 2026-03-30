@@ -48,24 +48,24 @@ export default function ConductorPage() {
     <main className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-10 sm:px-6 lg:px-8">
       <Panel title="Conductor Panel" eyebrow="Fast scanning workflow">
         <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-white/10 bg-slate-900/80 p-4">
-            <p className="text-sm text-slate-300">Active bus</p>
-            <p className="mt-2 text-2xl font-semibold text-white">{bus.code}</p>
+          <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/80 p-4 shadow-sm dark:shadow-none">
+            <p className="text-sm text-slate-500 dark:text-slate-300">Active bus</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{bus.code}</p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-slate-900/80 p-4">
-            <p className="text-sm text-slate-300">Occupancy</p>
-            <p className="mt-2 text-2xl font-semibold text-white">{status.occupiedSeats}/{bus.capacity.seats}</p>
+          <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/80 p-4 shadow-sm dark:shadow-none">
+            <p className="text-sm text-slate-500 dark:text-slate-300">Occupancy</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{status.occupiedSeats}/{bus.capacity.seats}</p>
             <StatusPill tone={status.indicator} className="mt-2" >{status.indicator}</StatusPill>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-slate-900/80 p-4">
-            <p className="text-sm text-slate-300">Parcels on board</p>
-            <p className="mt-2 text-2xl font-semibold text-white">{parcels.filter(p => p.assignedBusId === bus.id).length}</p>
+          <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/80 p-4 shadow-sm dark:shadow-none">
+            <p className="text-sm text-slate-500 dark:text-slate-300">Parcels on board</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{parcels.filter(p => p.assignedBusId === bus.id).length}</p>
           </div>
         </div>
       </Panel>
 
       {error && (
-        <div className="p-4 bg-rose-500/20 border border-rose-400/30 rounded-2xl text-rose-200">
+        <div className="p-4 bg-rose-100 dark:bg-rose-500/20 border border-rose-200 dark:border-rose-400/30 rounded-2xl text-rose-700 dark:text-rose-200 shadow-sm">
           {error}
         </div>
       )}
@@ -76,10 +76,12 @@ export default function ConductorPage() {
             <QRScanner onScan={handleTicketScan} />
           ) : ticketResult && ticketResult.ok ? (
             <div className="space-y-4">
-              <div className="p-4 bg-emerald-500/20 border border-emerald-400/30 rounded-lg text-emerald-200">
-                <p className="font-semibold">✓ Boarding Confirmed</p>
-                <p className="text-sm mt-2">Passenger: {ticketResult.ticket?.passengerId}</p>
-                <p className="text-sm">Occupancy: {ticketResult.occupancy?.occupiedSeats}/{ticketResult.occupancy?.availableSeats ? ticketResult.occupancy.availableSeats + ticketResult.occupancy.occupiedSeats : "?"}</p>
+              <div className="p-4 bg-emerald-100 dark:bg-emerald-500/20 border border-emerald-200 dark:border-emerald-400/30 rounded-lg text-emerald-700 dark:text-emerald-200 shadow-sm">
+                <p className="font-semibold text-lg">✓ Boarding Confirmed</p>
+                <div className="mt-2 space-y-1 text-sm">
+                  <p>Passenger: <span className="font-mono">{ticketResult.ticket?.passengerId}</span></p>
+                  <p>Occupancy: {ticketResult.occupancy?.occupiedSeats}/{ticketResult.occupancy?.availableSeats ? ticketResult.occupancy.availableSeats + ticketResult.occupancy.occupiedSeats : "?"}</p>
+                </div>
               </div>
               <Button variant="secondary" onClick={() => {
                 setTicketResult(null);
@@ -98,8 +100,8 @@ export default function ConductorPage() {
               >
                 {loading ? "Scanning..." : "Start Scan"}
               </Button>
-              <p className="text-xs text-slate-400 text-center">
-                Try: {tickets[0].ticketId}
+              <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
+                Try: <span className="font-mono select-all">{tickets[0].ticketId}</span>
               </p>
             </div>
           )}
@@ -110,11 +112,13 @@ export default function ConductorPage() {
             <QRScanner onScan={handleParcelScan} />
           ) : parcelResult && parcelResult.parcel ? (
             <div className="space-y-4">
-              <div className="p-4 bg-emerald-500/20 border border-emerald-400/30 rounded-lg text-emerald-200">
-                <p className="font-semibold">✓ Parcel Loaded</p>
-                <p className="text-sm mt-2">ID: {parcelResult.parcel?.id}</p>
-                <p className="text-sm">{parcelResult.parcel?.fromCity} → {parcelResult.parcel?.destinationCity}</p>
-                <p className="text-sm">Status: {parcelResult.parcel?.status}</p>
+              <div className="p-4 bg-emerald-100 dark:bg-emerald-500/20 border border-emerald-200 dark:border-emerald-400/30 rounded-lg text-emerald-700 dark:text-emerald-200 shadow-sm">
+                <p className="font-semibold text-lg">✓ Parcel Loaded</p>
+                <div className="mt-2 space-y-1 text-sm">
+                  <p>ID: <span className="font-mono">{parcelResult.parcel?.id}</span></p>
+                  <p>{parcelResult.parcel?.fromCity} → {parcelResult.parcel?.destinationCity}</p>
+                  <p>Status: <span className="capitalize">{parcelResult.parcel?.status}</span></p>
+                </div>
               </div>
               <Button variant="secondary" onClick={() => {
                 setParcelResult(null);
@@ -133,8 +137,8 @@ export default function ConductorPage() {
               >
                 {loading ? "Scanning..." : "Scan Parcel QR"}
               </Button>
-              <p className="text-xs text-slate-400 text-center">
-                Try: {parcels[0].id}
+              <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
+                Try: <span className="font-mono select-all">{parcels[0].id}</span>
               </p>
             </div>
           )}
@@ -142,11 +146,23 @@ export default function ConductorPage() {
       </div>
 
       <Panel title="Recent Activity" eyebrow="Boarding and parcel events">
-        <div className="space-y-2 text-sm">
-          <p className="text-slate-400">• 2 passengers boarded at Hyderabad</p>
-          <p className="text-slate-400">• 3 parcels loaded from logistics hub</p>
-          <p className="text-slate-400">• 1 parcel unloaded at Khammam</p>
-          <p className="text-slate-400">• Current occupancy: {status.occupiedSeats}/{bus.capacity.seats} seats</p>
+        <div className="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+          <div className="flex items-center gap-3">
+            <span className="h-1.5 w-1.5 rounded-full bg-cyan-500"></span>
+            <p>2 passengers boarded at Hyderabad</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="h-1.5 w-1.5 rounded-full bg-cyan-500"></span>
+            <p>3 parcels loaded from logistics hub</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="h-1.5 w-1.5 rounded-full bg-cyan-500"></span>
+            <p>1 parcel unloaded at Khammam</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="h-1.5 w-1.5 rounded-full bg-cyan-500"></span>
+            <p>Current occupancy: {status.occupiedSeats}/{bus.capacity.seats} seats</p>
+          </div>
         </div>
       </Panel>
     </main>

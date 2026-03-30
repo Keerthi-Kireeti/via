@@ -9,7 +9,7 @@ const toneMap: Record<SeatTone, string> = {
 };
 
 export function AppShell({ children }: PropsWithChildren) {
-  return <div className="min-h-screen bg-slate-950 text-white">{children}</div>;
+  return <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-950 dark:text-white transition-colors duration-300">{children}</div>;
 }
 
 export function Panel({
@@ -19,11 +19,11 @@ export function Panel({
   children
 }: PropsWithChildren<{ title: string; eyebrow?: string; actions?: ReactNode }>) {
   return (
-    <section className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-2xl shadow-slate-950/25 backdrop-blur">
+    <section className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-5 shadow-xl dark:shadow-2xl dark:shadow-slate-950/25 backdrop-blur">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
-          {eyebrow ? <p className="text-xs uppercase tracking-[0.3em] text-cyan-200/70">{eyebrow}</p> : null}
-          <h2 className="mt-1 text-xl font-semibold text-white">{title}</h2>
+          {eyebrow ? <p className="text-xs uppercase tracking-[0.3em] text-cyan-600 dark:text-cyan-200/70">{eyebrow}</p> : null}
+          <h2 className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">{title}</h2>
         </div>
         {actions}
       </div>
@@ -33,8 +33,14 @@ export function Panel({
 }
 
 export function StatusPill({ tone, children, className }: PropsWithChildren<{ tone: SeatTone; className?: string }>) {
+  const lightToneMap: Record<SeatTone, string> = {
+    green: "bg-emerald-100 text-emerald-700 ring-emerald-200",
+    yellow: "bg-amber-100 text-amber-700 ring-amber-200",
+    red: "bg-rose-100 text-rose-700 ring-rose-200"
+  };
+  
   return (
-    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ring-1 ${toneMap[tone]} ${className || ""}`}>
+    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ring-1 dark:${toneMap[tone]} ${lightToneMap[tone]} ${className || ""}`}>
       {children}
     </span>
   );
@@ -50,10 +56,10 @@ export function StatCard({
   hint: string;
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-slate-900/80 p-4">
-      <p className="text-sm text-slate-300">{label}</p>
-      <p className="mt-2 text-3xl font-semibold text-white">{value}</p>
-      <p className="mt-2 text-sm text-cyan-100/70">{hint}</p>
+    <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/80 p-4 shadow-sm dark:shadow-none">
+      <p className="text-sm text-slate-500 dark:text-slate-300">{label}</p>
+      <p className="mt-2 text-3xl font-semibold text-slate-900 dark:text-white">{value}</p>
+      <p className="mt-2 text-sm text-cyan-600 dark:text-cyan-100/70">{hint}</p>
     </div>
   );
 }
@@ -69,9 +75,9 @@ export function SectionHeading({
 }) {
   return (
     <div className="max-w-2xl">
-      {kicker ? <p className="text-sm uppercase tracking-[0.3em] text-cyan-300/70">{kicker}</p> : null}
-      <h1 className="mt-2 text-4xl font-semibold text-white sm:text-5xl">{title}</h1>
-      <p className="mt-4 text-lg text-slate-300">{description}</p>
+      {kicker ? <p className="text-sm uppercase tracking-[0.3em] text-cyan-600 dark:text-cyan-300/70">{kicker}</p> : null}
+      <h1 className="mt-2 text-4xl font-semibold text-slate-900 dark:text-white sm:text-5xl">{title}</h1>
+      <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">{description}</p>
     </div>
   );
 }
@@ -90,17 +96,17 @@ export function BusCard({
   distance: number;
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+    <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-4 shadow-sm dark:shadow-none">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm text-slate-300">Bus {busCode}</p>
-          <p className="mt-1 text-lg font-semibold text-white">{route}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-300">Bus {busCode}</p>
+          <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">{route}</p>
         </div>
         <StatusPill tone={occupancy.indicator}>{occupancy.occupied}/{occupancy.total}</StatusPill>
       </div>
       <div className="mt-3 flex gap-4 text-sm">
-        <span className="text-slate-400">ETA: {eta} min</span>
-        <span className="text-slate-400">{distance} km away</span>
+        <span className="text-slate-500 dark:text-slate-400">ETA: {eta} min</span>
+        <span className="text-slate-500 dark:text-slate-400">{distance} km away</span>
       </div>
     </div>
   );
@@ -124,17 +130,17 @@ export function TicketCard({
   qrCode?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+    <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-4 shadow-sm dark:shadow-none">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs text-slate-400">Ticket {ticketId.slice(-6)}</p>
-          <p className="mt-2 font-semibold text-white">{route}</p>
-          <p className="mt-1 text-sm text-slate-300">{from} → {to}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Ticket {ticketId.slice(-6)}</p>
+          <p className="mt-2 font-semibold text-slate-900 dark:text-white">{route}</p>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{from} → {to}</p>
         </div>
         <StatusPill tone={status === "active" ? "green" : "yellow"}>{status}</StatusPill>
       </div>
       {qrCode && <img src={qrCode} alt="QR" className="mt-3 h-24 w-24" />}
-      <p className="mt-3 text-sm text-slate-400">Fare: ₹{fare}</p>
+      <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">Fare: ₹{fare}</p>
     </div>
   );
 }
@@ -157,17 +163,17 @@ export function ParcelCard({
   health: string;
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+    <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-4 shadow-sm dark:shadow-none">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs text-slate-400">Parcel {parcelId.slice(-6)}</p>
-          <p className="mt-2 font-semibold text-white">{from} → {to}</p>
-          <p className="mt-1 text-sm text-slate-300">{weight}kg</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Parcel {parcelId.slice(-6)}</p>
+          <p className="mt-2 font-semibold text-slate-900 dark:text-white">{from} → {to}</p>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{weight}kg</p>
         </div>
         <StatusPill tone={status === "delivered" ? "green" : "yellow"}>{status}</StatusPill>
       </div>
       <div className="mt-3 flex gap-2">
-        <span className="text-sm text-slate-400">ETA: {eta}</span>
+        <span className="text-sm text-slate-500 dark:text-slate-400">ETA: {eta}</span>
         {health !== "stable" && <StatusPill tone="red">{health}</StatusPill>}
       </div>
     </div>
@@ -183,11 +189,11 @@ export function Button({
   variant?: "primary" | "secondary" | "danger";
   size?: "sm" | "md" | "lg";
 }) {
-  const baseClass = "font-medium rounded-lg transition-colors";
+  const baseClass = "font-medium rounded-lg transition-all duration-200 active:scale-95";
   const variants = {
-    primary: "bg-cyan-600 hover:bg-cyan-700 text-white",
-    secondary: "bg-slate-800 hover:bg-slate-700 text-white border border-white/10",
-    danger: "bg-rose-600 hover:bg-rose-700 text-white"
+    primary: "bg-cyan-600 hover:bg-cyan-700 text-white shadow-md shadow-cyan-600/20",
+    secondary: "bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white dark:border-white/10",
+    danger: "bg-rose-600 hover:bg-rose-700 text-white shadow-md shadow-rose-600/20"
   };
   const sizes = {
     sm: "px-3 py-1 text-sm",
@@ -207,9 +213,9 @@ export function Input({
 }: React.InputHTMLAttributes<HTMLInputElement> & { label?: string }) {
   return (
     <div className="flex flex-col gap-2">
-      {label && <label className="text-sm font-medium text-slate-300">{label}</label>}
+      {label && <label className="text-sm font-medium text-slate-600 dark:text-slate-300">{label}</label>}
       <input
-        className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-white placeholder-slate-500 focus:border-cyan-400 focus:outline-none"
+        className="rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 px-4 py-2 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/20 transition-all"
         {...props}
       />
     </div>
@@ -224,12 +230,12 @@ export function Table({
   data: Array<Record<string, any>>;
 }) {
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-transparent">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-white/10">
+          <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5">
             {columns.map((col) => (
-              <th key={col.key} className="px-4 py-3 text-left font-medium text-slate-300">
+              <th key={col.key} className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-300">
                 {col.label}
               </th>
             ))}
@@ -237,9 +243,9 @@ export function Table({
         </thead>
         <tbody>
           {data.map((row, idx) => (
-            <tr key={idx} className="border-b border-white/10 hover:bg-white/5">
+            <tr key={idx} className="border-b border-slate-100 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
               {columns.map((col) => (
-                <td key={col.key} className="px-4 py-3 text-slate-200">
+                <td key={col.key} className="px-4 py-3 text-slate-700 dark:text-slate-200">
                   {row[col.key]}
                 </td>
               ))}
@@ -252,16 +258,20 @@ export function Table({
 }
 
 export function Badge({
-  variant = "info",
-  children
-}: PropsWithChildren<{ variant?: "info" | "success" | "warning" | "error" }>) {
-  const colors = {
-    info: "bg-blue-500/20 text-blue-200",
-    success: "bg-emerald-500/20 text-emerald-200",
-    warning: "bg-amber-500/20 text-amber-200",
-    error: "bg-rose-500/20 text-rose-200"
+  children,
+  tone = "info"
+}: PropsWithChildren<{ tone?: "info" | "success" | "warning" | "error" }>) {
+  const tones = {
+    info: "bg-cyan-100 text-cyan-700 ring-cyan-200 dark:bg-cyan-500/15 dark:text-cyan-200 dark:ring-cyan-400/30",
+    success: "bg-emerald-100 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-200 dark:ring-emerald-400/30",
+    warning: "bg-amber-100 text-amber-700 ring-amber-200 dark:bg-amber-500/15 dark:text-amber-200 dark:ring-amber-400/30",
+    error: "bg-rose-100 text-rose-700 ring-rose-200 dark:bg-rose-500/15 dark:text-rose-200 dark:ring-rose-400/30"
   };
-  return <span className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${colors[variant]}`}>{children}</span>;
+  return (
+    <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${tones[tone]}`}>
+      {children}
+    </span>
+  );
 }
 
 export function LoadingSpinner() {

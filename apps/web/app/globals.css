@@ -11,12 +11,17 @@
 }
 
 body {
-  @apply bg-slate-950 text-white antialiased selection:bg-cyan-500/30;
-  background-image: radial-gradient(circle at top, rgba(34, 211, 238, 0.08), transparent 40%), linear-gradient(180deg, #020617 0%, #0f172a 65%, #111827 100%);
+  @apply bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white antialiased selection:bg-cyan-500/30;
+  background-image: radial-gradient(circle at top, rgba(34, 211, 238, 0.05), transparent 40%), linear-gradient(180deg, #f8fafc 0%, #f1f5f9 65%, #e2e8f0 100%);
   background-attachment: fixed;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
+
+.dark body {
+  background-image: radial-gradient(circle at top, rgba(34, 211, 238, 0.08), transparent 40%), linear-gradient(180deg, #020617 0%, #0f172a 65%, #111827 100%);
+}
+
 
 .transit-grid {
   background-image: radial-gradient(circle at center, rgba(34,211,238,0.08) 0, rgba(15,23,42,0) 45%), linear-gradient(rgba(148,163,184,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.05) 1px, transparent 1px);
