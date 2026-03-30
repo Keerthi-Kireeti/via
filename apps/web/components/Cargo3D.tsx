@@ -231,7 +231,8 @@ export function Cargo3DVisualization({
       animationFrameId = requestAnimationFrame(animate);
       time += 0.016;
 
-      // Auto-rotate if enabled and not dragging - slightly faster
+      // Auto-rotate if enabled and not dragging - DISABLED as per user request
+      /*
       if (autoRotate && !controlsRef.current.isDragging) {
         const pos = camera.position;
         const radius = Math.sqrt(pos.x ** 2 + pos.y ** 2 + pos.z ** 2);
@@ -242,13 +243,16 @@ export function Cargo3DVisualization({
         camera.position.z = radius * Math.sin(phi) * Math.sin(theta);
         camera.lookAt(bay.width / 2, bay.height / 2, bay.length / 2);
       }
+      */
 
-      // Smooth subtle animations for cargo
+      // Smooth subtle animations for cargo - DISABLED as per user request
+      /*
       cargoMeshes.forEach((mesh) => {
-        mesh.position.y += Math.sin(time * 2.0 + mesh.userData.index) * 0.05; // Reduced amplitude, increased speed
+        mesh.position.y += Math.sin(time * 2.0 + mesh.userData.index) * 0.05; 
         mesh.rotation.x += 0.001;
         mesh.rotation.y += 0.0015;
       });
+      */
 
       renderer.render(scene, camera);
     };
