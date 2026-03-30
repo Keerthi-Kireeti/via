@@ -1,4 +1,5 @@
 import { Panel, StatusPill, Input, Button } from "@transitlink/ui";
+import { routes, buses, occupancy } from "../../../lib/demo-data";
 
 export default function PassengerSearchPage() {
   return (

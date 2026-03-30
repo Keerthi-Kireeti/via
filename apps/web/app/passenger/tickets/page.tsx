@@ -1,4 +1,5 @@
 import { Panel, StatusPill, Button } from "@transitlink/ui";
+import { tickets } from "../../../lib/demo-data";
 
 export default function PassengerTicketsPage() {
   const ticket = tickets[0];

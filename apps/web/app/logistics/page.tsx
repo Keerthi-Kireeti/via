@@ -1,4 +1,7 @@
 import { Panel, StatusPill, Input, Button } from "@transitlink/ui";
+import { Hero, ParcelTimeline } from "../../components/cards";
+import { CargoOptimizer } from "../../components/CargoOptimizer";
+import { parcelTracking, parcels } from "../../lib/demo-data";
 
 export default function LogisticsPage() {
   return (

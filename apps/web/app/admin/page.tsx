@@ -1,4 +1,6 @@
 import { Panel, StatusPill, Button } from "@transitlink/ui";
+import { MapPanel, StatGrid } from "../../components/cards";
+import { adminStats, buses, occupancy, routes } from "../../lib/demo-data";
 
 export default function AdminPage() {
   return (
