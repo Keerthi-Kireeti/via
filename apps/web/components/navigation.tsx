@@ -11,7 +11,7 @@ export function TopNav() {
     <nav className="sticky top-0 z-50 border-b border-slate-200 dark:border-white/10 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2">
-          <img src="/via.png" alt="Via Logo" className="h-8 w-auto sm:h-10" />
+          <img src="/via-removebg-preview.png" alt="Via Logo" className="h-8 w-auto sm:h-10" />
         </Link>
         <div className="flex items-center gap-2 sm:gap-4">
           <select 
