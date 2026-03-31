@@ -8,7 +8,7 @@ import "./globals.css";
 const font = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk" });
 
 export const metadata: Metadata = {
-  title: "TransitLink",
+  title: "Via",
   description: "Real-time bus seat intelligence and parcel logistics for public transport systems."
 };
 

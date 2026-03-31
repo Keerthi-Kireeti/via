@@ -46,7 +46,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>('en');
 
   useEffect(() => {
-    const savedLang = localStorage.getItem('transitlink-lang') as Language;
+    const savedLang = localStorage.getItem('via-lang') as Language;
     if (savedLang && ['en', 'hi', 'te', 'es'].includes(savedLang)) {
       setLanguageState(savedLang);
     }
@@ -54,7 +54,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem('transitlink-lang', lang);
+    localStorage.setItem('via-lang', lang);
   };
 
   const t = (key: string) => {

@@ -6,7 +6,7 @@ export function ThemeToggle() {
   const [theme, setTheme] = useState<"dark" | "light">("dark");
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("transitlink-theme") as "dark" | "light";
+    const savedTheme = localStorage.getItem("via-theme") as "dark" | "light";
     if (savedTheme) {
       setTheme(savedTheme);
     }
@@ -18,7 +18,7 @@ export function ThemeToggle() {
     } else {
       document.documentElement.classList.remove("dark");
     }
-    localStorage.setItem("transitlink-theme", theme);
+    localStorage.setItem("via-theme", theme);
   }, [theme]);
 
   return (
