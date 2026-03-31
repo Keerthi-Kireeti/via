@@ -14,9 +14,9 @@ const app = createApp(io);
 httpServer.on("request", app);
 
 io.on("connection", (socket) => {
-  socket.emit("system.ready", { message: "TransitLink realtime connected" });
+  socket.emit("system.ready", { message: "Via realtime connected" });
 });
 
 httpServer.listen(port, () => {
-  console.log(`TransitLink API listening on http://localhost:${port}`);
+  console.log(`Via API listening on http://localhost:${port}`);
 });

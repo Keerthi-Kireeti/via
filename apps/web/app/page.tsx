@@ -10,7 +10,7 @@ export default function HomePage() {
         <div>
           <Hero
             kicker="Mobility intelligence"
-            title="TransitLink turns every bus seat and luggage bay into live capacity."
+            title="Via turns every bus seat and luggage bay into live capacity."
             description="Give passengers one lineage ticket across connected buses, expose real-time seat confidence, and monetize spare cargo space with QR-tracked parcel logistics."
           />
           <div className="mt-8 flex flex-wrap gap-3">

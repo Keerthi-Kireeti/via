@@ -9,7 +9,10 @@ const font = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk
 
 export const metadata: Metadata = {
   title: "Via",
-  description: "Real-time bus seat intelligence and parcel logistics for public transport systems."
+  description: "Real-time bus seat intelligence and parcel logistics for public transport systems.",
+  icons: {
+    icon: "/via-removebg-preview.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
