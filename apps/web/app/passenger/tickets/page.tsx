@@ -1,5 +1,6 @@
 import { Panel, StatusPill, Button } from "@transitlink/ui";
 import { tickets } from "../../../lib/demo-data";
+import { QRCodeGenerator } from "../../../components/QRCodeGenerator";
 
 export default function PassengerTicketsPage() {
   const ticket = tickets[0];
@@ -23,8 +24,8 @@ export default function PassengerTicketsPage() {
             </div>
           </div>
           <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-cyan-500/30 bg-cyan-500/5 dark:bg-cyan-400/10 p-10 text-center text-cyan-700 dark:text-cyan-100 shadow-inner">
-            <div className="mb-4 text-5xl">📱</div>
-            <p className="font-mono text-xl font-bold">QR-TKT-1001</p>
+            <QRCodeGenerator value={ticket.ticketId} size={160} className="mb-4" />
+            <p className="font-mono text-xl font-bold">{ticket.ticketId}</p>
             <p className="mt-2 text-xs uppercase tracking-widest opacity-60">Scan at bus entry</p>
           </div>
         </div>
