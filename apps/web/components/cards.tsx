@@ -28,12 +28,50 @@ export function Hero({
 export function MapPanel({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <Panel title={title} eyebrow="Live tracking">
-      <div className="transit-grid relative h-72 overflow-hidden rounded-2xl border border-white/10 bg-slate-900/60 p-6">
-        <div className="absolute left-[18%] top-[32%] h-3 w-3 rounded-full bg-cyan-300 shadow-[0_0_0_12px_rgba(34,211,238,0.12)]" />
-        <div className="absolute left-[54%] top-[52%] h-3 w-3 rounded-full bg-emerald-300 shadow-[0_0_0_12px_rgba(52,211,153,0.12)]" />
-        <div className="absolute left-[72%] top-[28%] h-3 w-3 rounded-full bg-amber-300 shadow-[0_0_0_12px_rgba(251,191,36,0.12)]" />
-        <div className="absolute bottom-4 left-4 rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-sm text-slate-200">
-          {subtitle}
+      <div className="relative h-[400px] overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-slate-900/60 shadow-inner">
+        {/* Interactive Map Background */}
+        <div className="absolute inset-0 opacity-40 dark:opacity-20 transit-grid" />
+        
+        {/* Mock Map Elements */}
+        <svg className="absolute inset-0 h-full w-full" viewBox="0 0 800 400">
+          <path d="M50 100 Q 150 50, 250 150 T 450 250 T 650 150" fill="none" stroke="currentColor" strokeWidth="2" className="text-cyan-500/30 dark:text-cyan-400/20" />
+          <path d="M100 300 Q 300 350, 500 250 T 750 100" fill="none" stroke="currentColor" strokeWidth="2" className="text-emerald-500/30 dark:text-emerald-400/20" />
+          
+          {/* Stops */}
+          <circle cx="50" cy="100" r="4" className="fill-slate-400 dark:fill-slate-600" />
+          <circle cx="250" cy="150" r="4" className="fill-slate-400 dark:fill-slate-600" />
+          <circle cx="450" cy="250" r="4" className="fill-slate-400 dark:fill-slate-600" />
+          <circle cx="650" cy="150" r="4" className="fill-slate-400 dark:fill-slate-600" />
+        </svg>
+
+        {/* Live Buses */}
+        <div className="absolute left-[31%] top-[30%] animate-pulse">
+          <div className="h-4 w-4 rounded-full bg-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.5)] ring-4 ring-cyan-500/20" />
+          <div className="absolute -top-8 -left-4 whitespace-nowrap rounded bg-slate-900 px-2 py-1 text-[10px] text-white shadow-lg">Bus 101 · 65km/h</div>
+        </div>
+
+        <div className="absolute left-[58%] top-[55%] animate-pulse" style={{ animationDelay: '1s' }}>
+          <div className="h-4 w-4 rounded-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)] ring-4 ring-emerald-500/20" />
+          <div className="absolute -top-8 -left-4 whitespace-nowrap rounded bg-slate-900 px-2 py-1 text-[10px] text-white shadow-lg">Bus 104 · 42km/h</div>
+        </div>
+
+        <div className="absolute left-[75%] top-[25%] animate-pulse" style={{ animationDelay: '2s' }}>
+          <div className="h-4 w-4 rounded-full bg-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.5)] ring-4 ring-amber-500/20" />
+          <div className="absolute -top-8 -left-4 whitespace-nowrap rounded bg-slate-900 px-2 py-1 text-[10px] text-white shadow-lg">Bus 202 · 58km/h</div>
+        </div>
+
+        {/* Controls Overlay */}
+        <div className="absolute top-4 right-4 flex flex-col gap-2">
+          <button className="h-8 w-8 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">+</button>
+          <button className="h-8 w-8 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">−</button>
+          <button className="h-8 w-8 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">📍</button>
+        </div>
+
+        <div className="absolute bottom-4 left-4 right-4 sm:right-auto max-w-sm rounded-2xl border border-slate-200 dark:border-white/10 bg-white/90 dark:bg-slate-950/80 backdrop-blur-md px-4 py-3 text-sm text-slate-900 dark:text-slate-200 shadow-xl">
+          <div className="flex items-center gap-3">
+            <div className="h-2 w-2 animate-ping rounded-full bg-emerald-500" />
+            <span className="font-medium">{subtitle}</span>
+          </div>
         </div>
       </div>
     </Panel>
