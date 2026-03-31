@@ -1,4 +1,4 @@
-# TransitLink MVP - Implementation Complete ✅
+# Via MVP - Implementation Complete ✅
 
 **A real-time bus seat intelligence and parcel logistics platform** built as a full-stack monorepo.
 
