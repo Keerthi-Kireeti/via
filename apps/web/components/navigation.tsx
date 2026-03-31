@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { ThemeToggle } from "./theme-toggle";
+import { useLanguage } from "../lib/i18n";
 
 export function TopNav() {
+  const { language, setLanguage, t } = useLanguage();
+
   return (
     <nav className="sticky top-0 z-50 border-b border-slate-200 dark:border-white/10 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
@@ -10,8 +13,18 @@ export function TopNav() {
           <span className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-white">TransitLink</span>
         </Link>
         <div className="flex items-center gap-2 sm:gap-4">
+          <select 
+            value={language} 
+            onChange={(e) => setLanguage(e.target.value as any)}
+            className="bg-transparent text-sm font-medium text-slate-600 dark:text-slate-300 border-none focus:ring-0 cursor-pointer"
+          >
+            <option value="en">EN</option>
+            <option value="hi">HI</option>
+            <option value="te">TE</option>
+            <option value="es">ES</option>
+          </select>
           <ThemeToggle />
-          <Link href="/login" className="hidden sm:block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-white transition-colors">Sign in</Link>
+          <Link href="/login" className="hidden sm:block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-white transition-colors">{t('signin')}</Link>
         </div>
       </div>
     </nav>
@@ -19,11 +32,12 @@ export function TopNav() {
 }
 
 export function BottomNav() {
+  const { t } = useLanguage();
   const links = [
-    { href: "/passenger", label: "Travel", icon: "👤" },
-    { href: "/conductor", label: "Check", icon: "🎫" },
-    { href: "/logistics", label: "Ship", icon: "📦" },
-    { href: "/admin", label: "Admin", icon: "⚙️" },
+    { href: "/passenger", label: t('travel'), icon: "👤" },
+    { href: "/conductor", label: t('check'), icon: "🎫" },
+    { href: "/logistics", label: t('ship'), icon: "📦" },
+    { href: "/admin", label: t('admin'), icon: "⚙️" },
   ];
 
   return (

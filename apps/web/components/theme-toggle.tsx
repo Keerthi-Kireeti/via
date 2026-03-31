@@ -3,7 +3,14 @@
 import { useEffect, useState } from "react";
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState("dark");
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("transitlink-theme") as "dark" | "light";
+    if (savedTheme) {
+      setTheme(savedTheme);
+    }
+  }, []);
 
   useEffect(() => {
     if (theme === "dark") {
@@ -11,6 +18,7 @@ export function ThemeToggle() {
     } else {
       document.documentElement.classList.remove("dark");
     }
+    localStorage.setItem("transitlink-theme", theme);
   }, [theme]);
 
   return (
