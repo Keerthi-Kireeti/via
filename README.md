@@ -45,10 +45,10 @@ npm run dev:web
 
 ### Demo Login (Email-based, no password)
 ```
-Passenger:  neha@transitlink.app      → /passenger
-Conductor:  ramesh@transitlink.app    → /conductor
-Admin:      asha@transitlink.app      → /admin
-Logistics:  parcel1@transitlink.app   → /logistics
+Passenger:  neha@via.app      → /passenger
+Conductor:  ramesh@via.app    → /conductor
+Admin:      asha@via.app      → /admin
+Logistics:  parcel1@via.app   → /logistics
 ```
 
 ---

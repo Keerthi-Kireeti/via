@@ -35,25 +35,25 @@ export const depots: Depot[] = [
 ];
 
 export const users: User[] = [
-  { id: "usr-admin-1", name: "Asha Reddy", email: "asha@transitlink.app", role: "admin", city: "Hyderabad" },
-  { id: "usr-con-1", name: "Ramesh Kumar", email: "ramesh@transitlink.app", role: "conductor", city: "Hyderabad" },
-  { id: "usr-con-2", name: "Divya Nair", email: "divya@transitlink.app", role: "conductor", city: "Vijayawada" },
-  { id: "usr-con-3", name: "Harish Rao", email: "harish@transitlink.app", role: "conductor", city: "Guntur" },
-  { id: "usr-pass-1", name: "Neha Patel", email: "neha@transitlink.app", role: "passenger", city: "Hyderabad" },
-  { id: "usr-pass-2", name: "Farhan Ali", email: "farhan@transitlink.app", role: "passenger", city: "Warangal" },
-  { id: "usr-pass-3", name: "Sai Charan", email: "sai@transitlink.app", role: "passenger", city: "Vijayawada" },
-  { id: "usr-pass-4", name: "Anjali Mehta", email: "anjali@transitlink.app", role: "passenger", city: "Guntur" },
-  { id: "usr-pass-5", name: "Kiran Das", email: "kiran@transitlink.app", role: "passenger", city: "Nalgonda" },
-  { id: "usr-pass-6", name: "Lakshmi Rao", email: "lakshmi@transitlink.app", role: "passenger", city: "Hyderabad" },
-  { id: "usr-pass-7", name: "Rohit Jain", email: "rohit@transitlink.app", role: "passenger", city: "Khammam" },
-  { id: "usr-pass-8", name: "Priya Singh", email: "priya@transitlink.app", role: "passenger", city: "Warangal" },
-  { id: "usr-pass-9", name: "Mohan Krishna", email: "mohan@transitlink.app", role: "passenger", city: "Vijayawada" },
-  { id: "usr-pass-10", name: "Ishita Sen", email: "ishita@transitlink.app", role: "passenger", city: "Guntur" },
-  { id: "usr-log-1", name: "ParcelPoint Hyderabad", email: "parcel1@transitlink.app", role: "logistics_user", city: "Hyderabad" },
-  { id: "usr-log-2", name: "ParcelPoint Warangal", email: "parcel2@transitlink.app", role: "logistics_user", city: "Warangal" },
-  { id: "usr-log-3", name: "ParcelPoint Vijayawada", email: "parcel3@transitlink.app", role: "logistics_user", city: "Vijayawada" },
-  { id: "usr-log-4", name: "ParcelPoint Guntur", email: "parcel4@transitlink.app", role: "logistics_user", city: "Guntur" },
-  { id: "usr-log-5", name: "ParcelPoint Khammam", email: "parcel5@transitlink.app", role: "logistics_user", city: "Khammam" }
+  { id: "usr-admin-1", name: "Asha Reddy", email: "asha@via.app", role: "admin", city: "Hyderabad" },
+  { id: "usr-con-1", name: "Ramesh Kumar", email: "ramesh@via.app", role: "conductor", city: "Hyderabad" },
+  { id: "usr-con-2", name: "Divya Nair", email: "divya@via.app", role: "conductor", city: "Vijayawada" },
+  { id: "usr-con-3", name: "Harish Rao", email: "harish@via.app", role: "conductor", city: "Guntur" },
+  { id: "usr-pass-1", name: "Neha Patel", email: "neha@via.app", role: "passenger", city: "Hyderabad" },
+  { id: "usr-pass-2", name: "Farhan Ali", email: "farhan@via.app", role: "passenger", city: "Warangal" },
+  { id: "usr-pass-3", name: "Sai Charan", email: "sai@via.app", role: "passenger", city: "Vijayawada" },
+  { id: "usr-pass-4", name: "Anjali Mehta", email: "anjali@via.app", role: "passenger", city: "Guntur" },
+  { id: "usr-pass-5", name: "Kiran Das", email: "kiran@via.app", role: "passenger", city: "Nalgonda" },
+  { id: "usr-pass-6", name: "Lakshmi Rao", email: "lakshmi@via.app", role: "passenger", city: "Hyderabad" },
+  { id: "usr-pass-7", name: "Rohit Jain", email: "rohit@via.app", role: "passenger", city: "Khammam" },
+  { id: "usr-pass-8", name: "Priya Singh", email: "priya@via.app", role: "passenger", city: "Warangal" },
+  { id: "usr-pass-9", name: "Mohan Krishna", email: "mohan@via.app", role: "passenger", city: "Vijayawada" },
+  { id: "usr-pass-10", name: "Ishita Sen", email: "ishita@via.app", role: "passenger", city: "Guntur" },
+  { id: "usr-log-1", name: "ParcelPoint Hyderabad", email: "parcel1@via.app", role: "logistics_user", city: "Hyderabad" },
+  { id: "usr-log-2", name: "ParcelPoint Warangal", email: "parcel2@via.app", role: "logistics_user", city: "Warangal" },
+  { id: "usr-log-3", name: "ParcelPoint Vijayawada", email: "parcel3@via.app", role: "logistics_user", city: "Vijayawada" },
+  { id: "usr-log-4", name: "ParcelPoint Guntur", email: "parcel4@via.app", role: "logistics_user", city: "Guntur" },
+  { id: "usr-log-5", name: "ParcelPoint Khammam", email: "parcel5@via.app", role: "logistics_user", city: "Khammam" }
 ];
 
 const lineage1Stops = makeStops([
