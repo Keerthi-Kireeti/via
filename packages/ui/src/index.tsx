@@ -19,13 +19,13 @@ export function Panel({
   children
 }: PropsWithChildren<{ title: string; eyebrow?: string; actions?: ReactNode }>) {
   return (
-    <section className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-5 shadow-xl dark:shadow-2xl dark:shadow-slate-950/25 backdrop-blur">
-      <div className="mb-4 flex items-start justify-between gap-4">
+    <section className="rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-4 sm:p-5 shadow-xl dark:shadow-2xl dark:shadow-slate-950/25 backdrop-blur">
+      <div className="mb-4 flex flex-col sm:flex-row items-start justify-between gap-2 sm:gap-4">
         <div>
-          {eyebrow ? <p className="text-xs uppercase tracking-[0.3em] text-cyan-600 dark:text-cyan-200/70">{eyebrow}</p> : null}
-          <h2 className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">{title}</h2>
+          {eyebrow ? <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-cyan-600 dark:text-cyan-200/70">{eyebrow}</p> : null}
+          <h2 className="mt-1 text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">{title}</h2>
         </div>
-        {actions}
+        {actions && <div className="w-full sm:w-auto">{actions}</div>}
       </div>
       {children}
     </section>

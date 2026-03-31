@@ -32,6 +32,7 @@ body {
 /* Smooth scroll for the whole site */
 html {
   scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Optimization for laggy elements */
@@ -43,5 +44,21 @@ html {
 /* Faster hover transitions */
 .hover\:scale-105:hover {
   @apply transition-transform duration-200 ease-out;
+}
+
+/* Mobile-first adjustments */
+@media (max-width: 640px) {
+  .hero-title {
+    font-size: clamp(2rem, 8vw, 3rem);
+    line-height: 1.1;
+  }
+  
+  .panel-container {
+    padding: 1rem;
+  }
+  
+  input, button {
+    font-size: 16px !important; /* Prevent iOS zoom on focus */
+  }
 }
 

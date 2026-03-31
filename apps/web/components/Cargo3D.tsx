@@ -185,18 +185,39 @@ export function Cargo3DVisualization({
     );
     scene.add(dragPlane);
 
-    // Mouse interaction
-    const onMouseMove = (event: MouseEvent) => {
+    // Interaction state for touch
+    let lastTouchX = 0;
+    let lastTouchY = 0;
+
+    // Mouse/Touch interaction
+    const onMouseMove = (event: MouseEvent | TouchEvent) => {
       if (!rendererRef.current || !cameraRef.current) return;
 
       const rect = rendererRef.current.domElement.getBoundingClientRect();
-      mouseRef.current.x = ((event.clientX - rect.left) / width) * 2 - 1;
-      mouseRef.current.y = -((event.clientY - rect.top) / height) * 2 + 1;
+      let clientX, clientY, movementX, movementY;
+
+      if ('touches' in event) {
+        if (event.touches.length === 0) return;
+        clientX = event.touches[0].clientX;
+        clientY = event.touches[0].clientY;
+        movementX = clientX - lastTouchX;
+        movementY = clientY - lastTouchY;
+        lastTouchX = clientX;
+        lastTouchY = clientY;
+      } else {
+        clientX = event.clientX;
+        clientY = event.clientY;
+        movementX = event.movementX;
+        movementY = event.movementY;
+      }
+
+      mouseRef.current.x = ((clientX - rect.left) / width) * 2 - 1;
+      mouseRef.current.y = -((clientY - rect.top) / height) * 2 + 1;
 
       // Handle dragging for rotation
-      if (controlsRef.current.isDragging && !event.ctrlKey) {
-        const deltaX = event.movementX * 0.008; 
-        const deltaY = event.movementY * 0.008;
+      if (controlsRef.current.isDragging && !('ctrlKey' in event && event.ctrlKey)) {
+        const deltaX = movementX * 0.008; 
+        const deltaY = movementY * 0.008;
         
         const pos = cameraRef.current.position;
         const radius = Math.sqrt(pos.x ** 2 + pos.y ** 2 + pos.z ** 2);
@@ -246,10 +267,22 @@ export function Cargo3DVisualization({
       }
     };
 
-    const onMouseDown = (event: MouseEvent) => {
+    const onMouseDown = (event: MouseEvent | TouchEvent) => {
       if (!cameraRef.current) return;
 
-      if (event.ctrlKey) {
+      let clientX, clientY;
+      if ('touches' in event) {
+        if (event.touches.length === 0) return;
+        clientX = event.touches[0].clientX;
+        clientY = event.touches[0].clientY;
+        lastTouchX = clientX;
+        lastTouchY = clientY;
+      } else {
+        clientX = event.clientX;
+        clientY = event.clientY;
+      }
+
+      if ('ctrlKey' in event && event.ctrlKey) {
         raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
         const intersects = raycasterRef.current.intersectObjects(cargoMeshes);
         
@@ -278,6 +311,9 @@ export function Cargo3DVisualization({
     // Zoom interaction (Wheel)
     const onWheel = (event: WheelEvent) => {
       if (!cameraRef.current) return;
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) return;
+      
+      // Only prevent default if scrolling over the canvas
       event.preventDefault();
 
       const pos = cameraRef.current.position;
@@ -303,6 +339,9 @@ export function Cargo3DVisualization({
     renderer.domElement.addEventListener('mousedown', onMouseDown);
     renderer.domElement.addEventListener('mouseup', onMouseUp);
     renderer.domElement.addEventListener('mouseleave', onMouseUp);
+    renderer.domElement.addEventListener('touchstart', onMouseDown, { passive: false });
+    renderer.domElement.addEventListener('touchmove', onMouseMove, { passive: false });
+    renderer.domElement.addEventListener('touchend', onMouseUp);
     renderer.domElement.addEventListener('wheel', onWheel, { passive: false });
 
     // Animation loop

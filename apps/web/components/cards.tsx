@@ -1,8 +1,28 @@
-import { Panel, SectionHeading, StatCard, StatusPill } from "@transitlink/ui";
+import { Badge, Panel, SectionHeading, StatCard, StatusPill } from "@transitlink/ui";
 import type { ParcelTrackingStatus, Route, SeatPredictionResult } from "@transitlink/types";
 
-export function Hero({ title, description, kicker }: { title: string; description: string; kicker: string }) {
-  return <SectionHeading title={title} description={description} kicker={kicker} />;
+export function Hero({
+  title,
+  description,
+  kicker
+}: {
+  title: string;
+  description: string;
+  kicker?: string;
+}) {
+  return (
+    <div className="relative overflow-hidden py-8 sm:py-12 lg:py-16">
+      <div className="relative z-10">
+        {kicker ? <Badge tone="info">{kicker}</Badge> : null}
+        <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-5xl lg:text-6xl max-w-3xl leading-[1.1]">
+          {title}
+        </h1>
+        <p className="mt-6 text-base sm:text-lg leading-7 text-slate-600 dark:text-slate-300 max-w-2xl">
+          {description}
+        </p>
+      </div>
+    </div>
+  );
 }
 
 export function MapPanel({ title, subtitle }: { title: string; subtitle: string }) {
@@ -90,9 +110,9 @@ export function ParcelTimeline({ tracking }: { tracking: ParcelTrackingStatus[] 
 
 export function StatGrid({ items }: { items: Array<{ label: string; value: string; hint: string }> }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      {items.map((item) => (
-        <StatCard key={item.label} {...item} />
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+      {items.map((item, idx) => (
+        <StatCard key={idx} {...item} />
       ))}
     </div>
   );
