@@ -32,6 +32,7 @@ export function Cargo3DVisualization({
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const raycasterRef = useRef(new THREE.Raycaster());
   const mouseRef = useRef(new THREE.Vector2());
+  const lightsRef = useRef<{ ambient?: THREE.AmbientLight; bayLine?: THREE.LineSegments; bayFloor?: THREE.Mesh; cargoMeshes?: THREE.Mesh[] }>({});
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -78,6 +79,7 @@ export function Cargo3DVisualization({
     // Enhanced lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, isDarkMode ? 0.6 : 0.8);
     scene.add(ambientLight);
+    lightsRef.current.ambient = ambientLight;
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
     directionalLight.position.set(200, 300, 200);
@@ -105,6 +107,7 @@ export function Cargo3DVisualization({
     );
     bayLine.position.set(bay.width / 2, bay.height / 2, bay.length / 2);
     scene.add(bayLine);
+    lightsRef.current.bayLine = bayLine;
 
     // Semi-transparent bay floor (receive shadows)
     const bayFloorGeometry = new THREE.PlaneGeometry(bay.width, bay.length);
@@ -119,6 +122,7 @@ export function Cargo3DVisualization({
     bayFloor.position.set(bay.width / 2, 0, bay.length / 2);
     bayFloor.receiveShadow = true;
     scene.add(bayFloor);
+    lightsRef.current.bayFloor = bayFloor;
 
     // Use shared geometries and materials for cargo
     const cargoGeometryCache = new Map<string, THREE.BoxGeometry>();
@@ -177,6 +181,7 @@ export function Cargo3DVisualization({
     });
 
     cargoMeshesRef.current = cargoMeshes;
+    lightsRef.current.cargoMeshes = cargoMeshes;
 
     // Plane for dragging cargo
     const dragPlane = new THREE.Mesh(
@@ -407,6 +412,77 @@ export function Cargo3DVisualization({
       if (rendererRef.current) rendererRef.current.dispose();
     };
   }, [cargo, bay, autoRotate]);
+
+  // Handle theme changes
+  useEffect(() => {
+    const updateSceneTheme = () => {
+      if (!sceneRef.current || !lightsRef.current.ambient) return;
+
+      const isDarkMode = document.documentElement.classList.contains('dark');
+
+      // Update scene background
+      sceneRef.current.background = isDarkMode
+        ? new THREE.Color(0x0f172a)
+        : new THREE.Color(0xf8fafc);
+
+      // Update ambient light intensity
+      lightsRef.current.ambient.intensity = isDarkMode ? 0.6 : 0.8;
+
+      // Update bay line color
+      if (lightsRef.current.bayLine) {
+        const material = lightsRef.current.bayLine.material as THREE.LineBasicMaterial;
+        if (material) {
+          material.color.setHex(isDarkMode ? 0x00ffff : 0x0ea5e9);
+        }
+      }
+
+      // Update bay floor color
+      if (lightsRef.current.bayFloor) {
+        const material = lightsRef.current.bayFloor.material as THREE.MeshPhongMaterial;
+        if (material) {
+          material.color.setHex(isDarkMode ? 0x1e293b : 0xe2e8f0);
+        }
+      }
+
+      // Update cargo meshes and their edges
+      if (lightsRef.current.cargoMeshes) {
+        lightsRef.current.cargoMeshes.forEach((mesh) => {
+          const material = mesh.material as THREE.MeshPhongMaterial;
+          if (material) {
+            material.emissive.setHex(isDarkMode ? 0x001a4d : 0x000000);
+          }
+
+          // Update edge colors
+          mesh.children.forEach((child: THREE.Object3D) => {
+            if (child instanceof THREE.LineSegments) {
+              const lineMaterial = child.material as THREE.LineBasicMaterial;
+              if (lineMaterial) {
+                lineMaterial.color.setHex(isDarkMode ? 0xffffff : 0x000000);
+              }
+            }
+          });
+        });
+      }
+    };
+
+    // Check for theme changes periodically and via MutationObserver
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          updateSceneTheme();
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   return (
     <div 
