@@ -40,7 +40,7 @@ export default function LogisticsPage() {
       eta: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
     };
     setParcels([parcel, ...parcels]);
-    setShowQR(id);
+    setShowQR(parcel.qrToken);
   };
 
   return (
