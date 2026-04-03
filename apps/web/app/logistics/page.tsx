@@ -35,7 +35,9 @@ export default function LogisticsPage() {
       },
       status: "booked" as const,
       healthStatus: "stable" as const,
-      assignedBusId: "bus-101"
+      assignedBusId: "bus-101",
+      qrToken: `QR_${id}`,
+      eta: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
     };
     setParcels([parcel, ...parcels]);
     setShowQR(id);

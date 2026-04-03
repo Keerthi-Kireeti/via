@@ -208,10 +208,12 @@ export function CargoOptimizer({ initialCargo = [], bayDimensions = DEFAULT_BAY 
 function StatCard({
   label,
   value,
+  hint,
   highlight = false,
 }: {
   label: string;
   value: string | number;
+  hint?: string;
   highlight?: boolean;
 }) {
   return (
@@ -231,6 +233,7 @@ function StatCard({
       >
         {value}
       </p>
+      {hint && <p className="text-xs text-slate-500 mt-1">{hint}</p>}
     </motion.div>
   );
 }
